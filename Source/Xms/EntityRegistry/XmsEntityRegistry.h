@@ -22,15 +22,19 @@ public:
 	static UXmsRegistrySubsystem* Get(TNotNull<const UWorld*> World);
 	static UXmsRegistrySubsystem& GetChecked(TNotNull<const UWorld*> World);
 
-	using TEntityCallback = TFunction<void(const FMassEntityHandle&)>;
-
 	struct FEntityContext
 	{
 		FMassEntityHandle Entity;
-		FCSFXms_MetaData MetaData;
+		FXmsCSF_MetaData MetaData;
 	};
 
-	DECLARE_MULTICAST_DELEGATE_OneParam(FEntityContextEvent, const TArray<FEntityContext>& /*EntityContexts*/);
+	DECLARE_MULTICAST_DELEGATE_OneParam(FOnEntityContextEvent, const TArray<FEntityContext>& /*EntityContexts*/);
+
+	FDelegateHandle SubscribeToEntitiesCreated(FOnEntityContextEvent::FDelegate&& Delegate);
+	bool UnsubscribeFromEntitiesCreated(FDelegateHandle DelegateHandle);
+
+	FDelegateHandle SubscribeToEntitiesDestroyed(FOnEntityContextEvent::FDelegate&& Delegate);
+	bool UnsubscribeFromEntitiesDestroyed(FDelegateHandle DelegateHandle);
 
 	// Set Class Defaults
 	UXmsRegistrySubsystem();
@@ -45,12 +49,6 @@ public:
 	virtual TStatId GetStatId() const override;
 	//~End UTickableWorldSubsystem interface
 
-	FDelegateHandle SubscribeToEntitiesCreated(FEntityContextEvent::FDelegate&& Delegate);
-	bool UnsubscribeFromEntitiesCreated(FDelegateHandle DelegateHandle);
-
-	FDelegateHandle SubscribeToEntitiesDestroyed(FEntityContextEvent::FDelegate&& Delegate);
-	bool UnsubscribeFromEntitiesDestroyed(FDelegateHandle DelegateHandle);
-
 	/**
 	 * Get an array of all Entities matching the MetaType
 	 * @param MetaType 
@@ -59,25 +57,19 @@ public:
 	 */
 	int32 GetEntitiesByMetaType(const EXmsEntityMetaType& MetaType, TArray<FMassEntityHandle>& OutEntities) const;
 
-protected:
-	friend class UXmsEntityCreated;
-	friend class UXmsEntityDestroyed;
-
-	TQueue<TArray<FEntityContext>> CreateQueue;
-	TQueue<TArray<FEntityContext>> DestroyQueue;
-
 	/**
-	 * Called by a Mass Observer Processor when Lifecycle Entities are Created
+	 * Called by a Mass Observer Processor when Registry Entities are Created
 	 * @param Entities One or more newly created Entities
 	 */
 	void MassOnEntitiesCreated(const TArray<FEntityContext>& Entities);
 
 	/**
-	 * Called by a Mass Observer Processor when Lifecycle Entities are Destroyed
+	 * Called by a Mass Observer Processor when Registry Entities are Destroyed
 	 * @param Entities One or more newly created Entities
 	 */
 	void MassOnEntitiesDestroyed(const TArray<FEntityContext>& Entities);
 
+protected:
 	/**
 	 * Handle delayed processing of off-GameThread Mass events on the Game thread
 	 */
@@ -117,17 +109,15 @@ protected:
 
 private:
 	UPROPERTY(Transient)
-	TMap<FMassEntityHandle, FCSFXms_MetaData> MetaEntities;
+	TMap<FMassEntityHandle, FXmsCSF_MetaData> EntityMeta;
 
 	mutable FTransactionallySafeRWLock EntityLockRW;
 
-	FEntityContextEvent OnEntitiesCreated;
-	mutable FCriticalSection CriticalCreateEvent;
-	mutable bool bIsInCreateBroadcast = false;
+	TQueue<TArray<FEntityContext>> CreateQueue;
+	TQueue<TArray<FEntityContext>> DestroyQueue;
 
-	FEntityContextEvent OnEntitiesDestroyed;
-	mutable FCriticalSection CriticalDestroyEvent;
-	mutable bool bIsInDestroyBroadcast = false;
+	FOnEntityContextEvent OnEntitiesCreated;
+	FOnEntityContextEvent OnEntitiesDestroyed;
 };
 
 template<>

@@ -14,15 +14,15 @@
 UXmsEntityCreated::UXmsEntityCreated()
 	: Query(*this)
 {
-	ObservedType = FTXms_Registry::StaticStruct();
+	ObservedType = FXmsT_Registry::StaticStruct();
 	ObservedOperations = EMassObservedOperationFlags::CreateEntity;
 	ExecutionFlags = static_cast<int32>(EProcessorExecutionFlags::AllNetModes);
 }
 
 void UXmsEntityCreated::ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager)
 {
-	Query.AddTagRequirement<FTXms_Registry>(EMassFragmentPresence::All);
-	Query.AddConstSharedRequirement<FCSFXms_MetaData>(EMassFragmentPresence::All);
+	Query.AddTagRequirement<FXmsT_Registry>(EMassFragmentPresence::All);
+	Query.AddConstSharedRequirement<FXmsCSF_MetaData>(EMassFragmentPresence::All);
 
 	ProcessorRequirements.AddSubsystemRequirement<UXmsRegistrySubsystem>(EMassFragmentAccess::ReadWrite);
 }
@@ -36,7 +36,7 @@ void UXmsEntityCreated::Execute(FMassEntityManager& EntityManager, FMassExecutio
 		{
 			Entities.Reserve(Entities.Num() + Context.GetNumEntities());
 
-			const auto& MetaData = Context.GetConstSharedFragment<FCSFXms_MetaData>();
+			const auto& MetaData = Context.GetConstSharedFragment<FXmsCSF_MetaData>();
 
 			for (FMassExecutionContext::FEntityIterator EntityIt = Context.CreateEntityIterator(); EntityIt; ++EntityIt)
 			{
@@ -66,15 +66,15 @@ void UXmsEntityCreated::Execute(FMassEntityManager& EntityManager, FMassExecutio
 UXmsEntityDestroyed::UXmsEntityDestroyed()
 	: Query(*this)
 {
-	ObservedType = FTXms_Registry::StaticStruct();
+	ObservedType = FXmsT_Registry::StaticStruct();
 	ObservedOperations = EMassObservedOperationFlags::DestroyEntity;
 	ExecutionFlags = static_cast<int32>(EProcessorExecutionFlags::AllNetModes);
 }
 
 void UXmsEntityDestroyed::ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager)
 {
-	Query.AddTagRequirement<FTXms_Registry>(EMassFragmentPresence::All);
-	Query.AddConstSharedRequirement<FCSFXms_MetaData>(EMassFragmentPresence::All);
+	Query.AddTagRequirement<FXmsT_Registry>(EMassFragmentPresence::All);
+	Query.AddConstSharedRequirement<FXmsCSF_MetaData>(EMassFragmentPresence::All);
 
 	ProcessorRequirements.AddSubsystemRequirement<UXmsRegistrySubsystem>(EMassFragmentAccess::ReadWrite);
 }
@@ -88,7 +88,7 @@ void UXmsEntityDestroyed::Execute(FMassEntityManager& EntityManager, FMassExecut
 		{
 			Entities.Reserve(Entities.Num() + Context.GetNumEntities());
 
-			const auto& MetaData = Context.GetConstSharedFragment<FCSFXms_MetaData>();
+			const auto& MetaData = Context.GetConstSharedFragment<FXmsCSF_MetaData>();
 
 			for (FMassExecutionContext::FEntityIterator EntityIt = Context.CreateEntityIterator(); EntityIt; ++EntityIt)
 			{

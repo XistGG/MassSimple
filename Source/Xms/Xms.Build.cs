@@ -19,7 +19,7 @@ public class Xms : ModuleRules
 		PrivateDependencyModuleNames.AddRange(new string[] { "AIModule", "Niagara" });
 
 		// This stuff is required specifically by Xms code
-		PrivateDependencyModuleNames.AddRange(new string[] { "MassEntity" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "MassEntity", "MassSimulation" });
 
 		// This stuff is required specifically for Mass debugging in Editor
 		if (Target.bBuildEditor)

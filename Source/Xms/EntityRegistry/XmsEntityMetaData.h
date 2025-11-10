@@ -13,16 +13,18 @@ UENUM()
 enum class EXmsEntityMetaType : uint8
 {
 	None = 0 UMETA(DisplayName = "None"),
-	Tree = 1 UMETA(DisplayName = "Tree"),
+	Rock = 1 UMETA(DisplayName = "Rock"),
+	Tree = 2 UMETA(DisplayName = "Tree"),
+	Wisp = 3 UMETA(DisplayName = "Wisp"),
 	// Add new MetaTypes here, then update MAX accordingly
-	MAX = 2 UMETA(Hidden = true),  // NOTICE: Always set MAX to the exclusive upper limit of valid values
+	MAX = 4 UMETA(Hidden = true),  // NOTICE: Always set MAX to the exclusive upper limit of valid values
 };
 
 /**
- * FCSFXms_MetaData
+ * FXmsCSF_MetaData
  */
 USTRUCT()
-struct FCSFXms_MetaData
+struct FXmsCSF_MetaData
 	: public FMassConstSharedFragment
 {
 	GENERATED_BODY()
@@ -37,20 +39,20 @@ struct FCSFXms_MetaData
 	inline bool IsValid() const;
 };
 
-inline bool FCSFXms_MetaData::IsValid() const
+inline bool FXmsCSF_MetaData::IsValid() const
 {
 	return MetaType != EXmsEntityMetaType::None
 		&& static_cast<uint8>(MetaType) < static_cast<uint8>(EXmsEntityMetaType::MAX);
 }
 
 /**
- * FTXms_Registry
+ * FXmsT_Registry
  *
  * An Entity must be tagged with this tag to be seen by the XmsEntityRegistry observer
  * processors, thus any Entity that wants to be in the Registry requires this tag.
  */
 USTRUCT()
-struct FTXms_Registry
+struct FXmsT_Registry
 	: public FMassTag
 {
 	GENERATED_BODY()

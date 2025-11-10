@@ -12,6 +12,8 @@ namespace UE::Mass
 	struct FEntityBuilder;
 }
 
+struct FXmsF_Transform;
+
 /**
  * AXmsEntityAutoBuilder
  */
@@ -51,10 +53,25 @@ protected:
 	UPROPERTY(EditAnywhere, Category=Xms)
 	float AutoBuildIntervalSeconds;
 
+	/**
+	 * Build an Entity
+	 * @return Mass Entity Handle for the newly built Entity
+	 */
 	virtual FMassEntityHandle BuildEntity();
 
-	virtual void SetupEntityBuilder(UE::Mass::FEntityBuilder& Builder);
+	/**
+	 * Configure the Mass Entity Builder for whatever Entity we will build
+	 * @param Builder 
+	 */
+	virtual void SetupEntityBuilder(UE::Mass::FEntityBuilder& IN OUT Builder);
+
+	/**
+	 * 
+	 * @param OutTransform 
+	 */
+	virtual void InitEntityTransform(FXmsF_Transform& OUT OutTransform);
 
 private:
+	/** Time (seconds) until the next AutoBuild should trigger (only valid when IsAutoBuildEnabled()==true) */
 	float TimeToNextAutoBuild = -1.;
 };

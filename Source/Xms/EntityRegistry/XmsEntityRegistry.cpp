@@ -2,6 +2,7 @@
 
 #include "XmsEntityRegistry.h"
 
+#include "MassSimulationSubsystem.h"
 #include "XmsLog.h"
 #include "Engine/World.h"
 
@@ -26,6 +27,11 @@ UXmsRegistrySubsystem::UXmsRegistrySubsystem()
 void UXmsRegistrySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
+
+	// We don't technically depend on the UMassSimulationSubsystem, but NOTHING in mass
+	// works without it, so I'm declaring it as an explicit dependency.
+	auto SimulationSubsystem = Collection.InitializeDependency<UMassSimulationSubsystem>();
+	check(SimulationSubsystem);
 }
 
 void UXmsRegistrySubsystem::Deinitialize()
@@ -46,35 +52,27 @@ TStatId UXmsRegistrySubsystem::GetStatId() const
 	RETURN_QUICK_DECLARE_CYCLE_STAT(UXmsRegistrySubsystem, STATGROUP_Tickables);
 }
 
-FDelegateHandle UXmsRegistrySubsystem::SubscribeToEntitiesCreated(FEntityContextEvent::FDelegate&& Delegate)
+FDelegateHandle UXmsRegistrySubsystem::SubscribeToEntitiesCreated(FOnEntityContextEvent::FDelegate&& Delegate)
 {
-	checkf(not bIsInCreateBroadcast, TEXT("Dev Error: DO NOT modify Create delegate during Create broadcast"));
-
-	FScopeLock ScopeLock(&CriticalCreateEvent);
+	check(IsInGameThread());
 	return OnEntitiesCreated.Add(Delegate);
 }
 
 bool UXmsRegistrySubsystem::UnsubscribeFromEntitiesCreated(FDelegateHandle DelegateHandle)
 {
-	checkf(not bIsInCreateBroadcast, TEXT("Dev Error: DO NOT modify Create delegate during Create broadcast"));
-
-	FScopeLock ScopeLock(&CriticalCreateEvent);
+	check(IsInGameThread());
 	return OnEntitiesCreated.Remove(DelegateHandle);
 }
 
-FDelegateHandle UXmsRegistrySubsystem::SubscribeToEntitiesDestroyed(FEntityContextEvent::FDelegate&& Delegate)
+FDelegateHandle UXmsRegistrySubsystem::SubscribeToEntitiesDestroyed(FOnEntityContextEvent::FDelegate&& Delegate)
 {
-	checkf(not bIsInDestroyBroadcast, TEXT("Dev Error: DO NOT modify Destroy delegate during Destroy broadcast"));
-
-	FScopeLock ScopeLock(&CriticalDestroyEvent);
+	check(IsInGameThread());
 	return OnEntitiesDestroyed.Add(Delegate);
 }
 
 bool UXmsRegistrySubsystem::UnsubscribeFromEntitiesDestroyed(FDelegateHandle DelegateHandle)
 {
-	checkf(not bIsInDestroyBroadcast, TEXT("Dev Error: DO NOT modify Destroy delegate during Destroy broadcast"));
-
-	FScopeLock ScopeLock(&CriticalDestroyEvent);
+	check(IsInGameThread());
 	return OnEntitiesDestroyed.Remove(DelegateHandle);
 }
 
@@ -85,7 +83,7 @@ int32 UXmsRegistrySubsystem::GetEntitiesByMetaType(const EXmsEntityMetaType& Met
 	UE::TReadScopeLock ReadLock (EntityLockRW);
 
 	const int32 OrigNum = OutEntities.Num();
-	for (const auto& Tuple : MetaEntities)
+	for (const auto& Tuple : EntityMeta)
 	{
 		if (Tuple.Value.MetaType == MetaType)
 		{
@@ -154,12 +152,7 @@ void UXmsRegistrySubsystem::NativeOnEntitiesCreated(const TArray<FEntityContext>
 		GameOnEntityCreated(EntityContext);
 	}
 
-	{
-		FScopeLock ScopeLock(&CriticalCreateEvent);
-		bIsInCreateBroadcast = true;
-		OnEntitiesCreated.Broadcast(Entities);
-		bIsInCreateBroadcast = false;
-	}
+	OnEntitiesCreated.Broadcast(Entities);
 }
 
 void UXmsRegistrySubsystem::NativeOnEntitiesDestroyed(const TArray<FEntityContext>& Entities)
@@ -174,12 +167,7 @@ void UXmsRegistrySubsystem::NativeOnEntitiesDestroyed(const TArray<FEntityContex
 		GameOnEntityDestroyed(EntityContext);
 	}
 
-	{
-		FScopeLock ScopeLock(&CriticalDestroyEvent);
-		bIsInDestroyBroadcast = true;
-		OnEntitiesDestroyed.Broadcast(Entities);
-		bIsInDestroyBroadcast = false;
-	}
+	OnEntitiesDestroyed.Broadcast(Entities);
 }
 
 void UXmsRegistrySubsystem::GameOnEntityCreated(const FEntityContext& EntityContext)
@@ -189,15 +177,19 @@ void UXmsRegistrySubsystem::GameOnEntityCreated(const FEntityContext& EntityCont
 	checkSlow(IsInGameThread());
 
 	const FMassEntityHandle& EntityHandle = EntityContext.Entity;
-	const FCSFXms_MetaData& MetaData = EntityContext.MetaData;
+	const FXmsCSF_MetaData& MetaData = EntityContext.MetaData;
 
 	checkf(EntityHandle.IsSet(), TEXT("EntityHandle must be set"));
-	checkf(MetaData.IsValid(), TEXT("Entity was created with invalid MetaData"));
+
+	// Warning log if/when Entities are being created that have invalid MetaData
+	UE_CVLOG_UELOG(not MetaData.IsValid(), this, LogXmsRegistry, Warning,
+		TEXT("%hs: Entity [%s] was created with invalid MetaData"),
+		__FUNCTION__, *EntityHandle.DebugGetDescription());
 
 	// Add Entity MetaData
 	{
 		UE::TWriteScopeLock WriteLock (EntityLockRW);
-		MetaEntities.Add(EntityHandle, MetaData);
+		EntityMeta.Add(EntityHandle, MetaData);
 	}
 
 #if WITH_XMS_DEBUG
@@ -214,11 +206,11 @@ void UXmsRegistrySubsystem::GameOnEntityDestroyed(const FEntityContext& EntityCo
 
 	const FMassEntityHandle& EntityHandle = EntityContext.Entity;
 
-	FCSFXms_MetaData MetaDataCopy;
+	FXmsCSF_MetaData MetaDataCopy;
 	bool bWasRemoved;
 	{
 		UE::TWriteScopeLock WriteLock (EntityLockRW);
-		bWasRemoved = MetaEntities.RemoveAndCopyValue(EntityHandle, OUT MetaDataCopy);
+		bWasRemoved = EntityMeta.RemoveAndCopyValue(EntityHandle, OUT MetaDataCopy);
 	}
 
 #if WITH_XMS_DEBUG
