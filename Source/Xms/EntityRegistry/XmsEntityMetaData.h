@@ -14,7 +14,8 @@ enum class EXmsEntityMetaType : uint8
 {
 	None = 0 UMETA(DisplayName = "None"),
 	Tree = 1 UMETA(DisplayName = "Tree"),
-	MAX = 2 UMETA(Hidden = true),
+	// Add new MetaTypes here, then update MAX accordingly
+	MAX = 2 UMETA(Hidden = true),  // NOTICE: Always set MAX to the exclusive upper limit of valid values
 };
 
 /**
@@ -42,8 +43,14 @@ inline bool FCSFXms_MetaData::IsValid() const
 		&& static_cast<uint8>(MetaType) < static_cast<uint8>(EXmsEntityMetaType::MAX);
 }
 
+/**
+ * FTXms_Registry
+ *
+ * An Entity must be tagged with this tag to be seen by the XmsEntityRegistry observer
+ * processors, thus any Entity that wants to be in the Registry requires this tag.
+ */
 USTRUCT()
-struct FTXms_Register
+struct FTXms_Registry
 	: public FMassTag
 {
 	GENERATED_BODY()

@@ -14,14 +14,14 @@
 UXmsEntityCreated::UXmsEntityCreated()
 	: Query(*this)
 {
-	ObservedType = FTXms_Register::StaticStruct();
+	ObservedType = FTXms_Registry::StaticStruct();
 	ObservedOperations = EMassObservedOperationFlags::CreateEntity;
 	ExecutionFlags = static_cast<int32>(EProcessorExecutionFlags::AllNetModes);
 }
 
 void UXmsEntityCreated::ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager)
 {
-	Query.AddTagRequirement<FTXms_Register>(EMassFragmentPresence::All);
+	Query.AddTagRequirement<FTXms_Registry>(EMassFragmentPresence::All);
 	Query.AddConstSharedRequirement<FCSFXms_MetaData>(EMassFragmentPresence::All);
 
 	ProcessorRequirements.AddSubsystemRequirement<UXmsRegistrySubsystem>(EMassFragmentAccess::ReadWrite);
@@ -66,14 +66,14 @@ void UXmsEntityCreated::Execute(FMassEntityManager& EntityManager, FMassExecutio
 UXmsEntityDestroyed::UXmsEntityDestroyed()
 	: Query(*this)
 {
-	ObservedType = FTXms_Register::StaticStruct();
+	ObservedType = FTXms_Registry::StaticStruct();
 	ObservedOperations = EMassObservedOperationFlags::DestroyEntity;
 	ExecutionFlags = static_cast<int32>(EProcessorExecutionFlags::AllNetModes);
 }
 
 void UXmsEntityDestroyed::ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager)
 {
-	Query.AddTagRequirement<FTXms_Register>(EMassFragmentPresence::All);
+	Query.AddTagRequirement<FTXms_Registry>(EMassFragmentPresence::All);
 	Query.AddConstSharedRequirement<FCSFXms_MetaData>(EMassFragmentPresence::All);
 
 	ProcessorRequirements.AddSubsystemRequirement<UXmsRegistrySubsystem>(EMassFragmentAccess::ReadWrite);
