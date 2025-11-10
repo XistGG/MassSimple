@@ -189,7 +189,7 @@ void UXmsRegistrySubsystem::GameOnEntityCreated(const FEntityContext& EntityCont
 	checkSlow(IsInGameThread());
 
 	const FMassEntityHandle& EntityHandle = EntityContext.Entity;
-	const FFXms_MetaData& MetaData = EntityContext.MetaData;
+	const FCSFXms_MetaData& MetaData = EntityContext.MetaData;
 
 	checkf(EntityHandle.IsSet(), TEXT("EntityHandle must be set"));
 	checkf(MetaData.IsValid(), TEXT("Entity was created with invalid MetaData"));
@@ -214,7 +214,7 @@ void UXmsRegistrySubsystem::GameOnEntityDestroyed(const FEntityContext& EntityCo
 
 	const FMassEntityHandle& EntityHandle = EntityContext.Entity;
 
-	FFXms_MetaData MetaDataCopy;
+	FCSFXms_MetaData MetaDataCopy;
 	bool bWasRemoved;
 	{
 		UE::TWriteScopeLock WriteLock (EntityLockRW);

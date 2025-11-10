@@ -18,11 +18,11 @@ enum class EXmsEntityMetaType : uint8
 };
 
 /**
- * FFXms_MetaData
+ * FCSFXms_MetaData
  */
 USTRUCT()
-struct FFXms_MetaData
-	: public FMassFragment
+struct FCSFXms_MetaData
+	: public FMassConstSharedFragment
 {
 	GENERATED_BODY()
 
@@ -36,8 +36,15 @@ struct FFXms_MetaData
 	inline bool IsValid() const;
 };
 
-inline bool FFXms_MetaData::IsValid() const
+inline bool FCSFXms_MetaData::IsValid() const
 {
 	return MetaType != EXmsEntityMetaType::None
 		&& static_cast<uint8>(MetaType) < static_cast<uint8>(EXmsEntityMetaType::MAX);
 }
+
+USTRUCT()
+struct FTXms_Register
+	: public FMassTag
+{
+	GENERATED_BODY()
+};

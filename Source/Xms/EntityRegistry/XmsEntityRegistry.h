@@ -27,7 +27,7 @@ public:
 	struct FEntityContext
 	{
 		FMassEntityHandle Entity;
-		FFXms_MetaData MetaData;
+		FCSFXms_MetaData MetaData;
 	};
 
 	DECLARE_MULTICAST_DELEGATE_OneParam(FEntityContextEvent, const TArray<FEntityContext>& /*EntityContexts*/);
@@ -116,8 +116,8 @@ protected:
 	void GameOnEntityDestroyed(const FEntityContext& EntityContext);
 
 private:
-	UPROPERTY()
-	TMap<FMassEntityHandle, FFXms_MetaData> MetaEntities;
+	UPROPERTY(Transient)
+	TMap<FMassEntityHandle, FCSFXms_MetaData> MetaEntities;
 
 	mutable FTransactionallySafeRWLock EntityLockRW;
 
