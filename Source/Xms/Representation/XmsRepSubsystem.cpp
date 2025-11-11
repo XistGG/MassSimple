@@ -266,8 +266,10 @@ FVector2D UXmsRepSubsystem::WorldToCanvas(const FVector& Location) const
 
 AStaticMeshActor* UXmsRepSubsystem::FindWorldPlane(const UWorld& World) const
 {
+#if UE_BUILD_DEVELOPMENT || UE_BUILD_DEBUG
+
 	// NOTICE: THIS ACTOR SEARCH METHODOLOGY DOES NOT WORK FOR A SHIPPING GAME.
-	// The Actor Label is only available in Development+DebugGame.
+	// The Actor Label is only available in Development+Debug configurations.
 	// There are many ways to solve this that are beyond the scope of this project.
 
 	for (TActorIterator<AStaticMeshActor> It(&World); It; ++It)
@@ -281,6 +283,7 @@ AStaticMeshActor* UXmsRepSubsystem::FindWorldPlane(const UWorld& World) const
 		}
 	}
 
+#endif
 	return nullptr;
 }
 
