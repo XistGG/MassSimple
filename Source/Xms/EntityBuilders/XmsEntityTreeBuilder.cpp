@@ -22,6 +22,9 @@ AXmsEntityTreeBuilder::AXmsEntityTreeBuilder(const FObjectInitializer& ObjectIni
 	BuildWorldZ = 0.;
 
 	EntityMetaType = EXmsEntityMetaType::Tree;
+	EntityLifespan = FXmsF_Lifespan {
+		.MaxAge = 60.,
+	};
 	bAutoBuildEnabled = true;
 	AutoBuildIntervalSeconds = 1.;
 }
@@ -84,13 +87,14 @@ void AXmsEntityTreeBuilder::SetupEntityBuilder(UE::Mass::FEntityBuilder& Builder
 	// Configure Builder
 
 	Builder.Add<FXmsCSF_MetaData>(MetaData);
+	Builder.Add<FXmsF_Lifespan>(EntityLifespan);
 	Builder.Add<FXmsF_Transform>(EntityTransform);
 
 	// For now, tag all Entities as being visible
 	Builder.Add<FXmsT_Representation>();
 
 	// Mass Observers apparently cannot observe Const Shared Fragments for created Entities,
-	// so we will use this Tag for Observer compatibility.
+	// so we will use this Tag for Registry Observer compatibility.
 	Builder.Add<FXmsT_Registry>();
 }
 

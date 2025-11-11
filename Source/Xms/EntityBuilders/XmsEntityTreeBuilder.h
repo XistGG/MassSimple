@@ -3,6 +3,7 @@
 #pragma once
 
 #include "MassEntityHandle.h"
+#include "Attributes/Lifespan/XmsLifespan.h"
 #include "EntityRegistry/XmsEntityMetaData.h"
 #include "GameFramework/Volume.h"
 #include "XmsEntityTreeBuilder.generated.h"
@@ -51,6 +52,12 @@ protected:
 	 */
 	UPROPERTY(EditAnywhere, Category=Xms)
 	EXmsEntityMetaType EntityMetaType;
+
+	/**
+	 * Initial value for the Entity's lifespan fragment
+	 */
+	UPROPERTY(EditAnywhere, Category=Xms)
+	FXmsF_Lifespan EntityLifespan;
 
 	/**
 	 * When True, AutoBuild is enabled. When False, AutoBuild is disabled.

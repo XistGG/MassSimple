@@ -18,8 +18,11 @@ UXmsEntityBuilderComponent::UXmsEntityBuilderComponent(const FObjectInitializer&
 	PrimaryComponentTick.bStartWithTickEnabled = true;
 
 	EntityMetaType = EXmsEntityMetaType::Wisp;
+	EntityLifespan = FXmsF_Lifespan {
+		.MaxAge = 4.,
+	};
 	bAutoBuildEnabled = true;
-	AutoBuildIntervalSeconds = 1.;
+	AutoBuildIntervalSeconds = 0.25;
 }
 
 void UXmsEntityBuilderComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -86,12 +89,13 @@ void UXmsEntityBuilderComponent::SetupEntityBuilder(UE::Mass::FEntityBuilder& Bu
 	// Configure Builder
 
 	Builder.Add<FXmsCSF_MetaData>(MetaData);
+	Builder.Add<FXmsF_Lifespan>(EntityLifespan);
 	Builder.Add<FXmsF_Transform>(Transform);
 
 	// For now, tag all Entities as being visible
 	Builder.Add<FXmsT_Representation>();
 
 	// Mass Observers apparently cannot observe Const Shared Fragments for created Entities,
-	// so we will use this Tag for Observer compatibility.
+	// so we will use this Tag for Registry Observer compatibility.
 	Builder.Add<FXmsT_Registry>();
 }
