@@ -23,7 +23,7 @@ UXmsRepresentationProcessor::UXmsRepresentationProcessor()
 
 void UXmsRepresentationProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager)
 {
-	Query.AddTagRequirement<FXmsT_Representation>(EMassFragmentPresence::All);
+	Query.AddTagRequirement<FXmsT_Represent>(EMassFragmentPresence::All);
 	Query.AddRequirement<FXmsF_Transform>(EMassFragmentAccess::ReadOnly);
 	Query.AddRequirement<FXmsF_Lifespan>(EMassFragmentAccess::ReadOnly, EMassFragmentPresence::Optional);
 	Query.AddConstSharedRequirement<FXmsCSF_MetaData>(EMassFragmentPresence::All);
@@ -68,8 +68,6 @@ void UXmsRepresentationProcessor::Execute(FMassEntityManager& EntityManager, FMa
 				.Entity = Context.GetEntity(*EntityIt),
 				.MetaType = MetaData.MetaType,
 				.Location = Transform.Location,
-				.Rotation = Transform.Rotation,
-				.Scale3D = Transform.Scale3D,
 				.AlphaAge = RelativeAge,
 			};
 			Entities.Emplace(Data);

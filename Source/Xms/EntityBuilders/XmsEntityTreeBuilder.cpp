@@ -91,7 +91,7 @@ void AXmsEntityTreeBuilder::SetupEntityBuilder(UE::Mass::FEntityBuilder& Builder
 	Builder.Add<FXmsF_Transform>(EntityTransform);
 
 	// For now, tag all Entities as being visible
-	Builder.Add<FXmsT_Representation>();
+	Builder.Add<FXmsT_Represent>();
 
 	// Mass Observers apparently cannot observe Const Shared Fragments for created Entities,
 	// so we will use this Tag for Registry Observer compatibility.

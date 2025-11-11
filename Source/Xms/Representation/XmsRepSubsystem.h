@@ -12,10 +12,14 @@ class AStaticMeshActor;
 class UTextureRenderTarget2D;
 
 /**
- * FXmsT_Representation
+ * FXmsT_Represent
+ *
+ * Used as a filter by UXmsRepresentationProcessor
+ *
+ * Every Entity should be represented needs to have this tag.
  */
 USTRUCT()
-struct FXmsT_Representation
+struct FXmsT_Represent
 	: public FMassTag
 {
 	GENERATED_BODY()
@@ -23,6 +27,9 @@ struct FXmsT_Representation
 
 /**
  * FXmsEntityRepresentationData
+ *
+ * This is the data that is copied from Mass->Game by the UXmsRepresentationProcessor.
+ * Add/modify this as needed to extract the data required.
  */
 USTRUCT()
 struct FXmsEntityRepresentationData
@@ -37,12 +44,6 @@ struct FXmsEntityRepresentationData
 
 	UPROPERTY(VisibleAnywhere)
 	FVector Location = FVector::ZeroVector;
-
-	UPROPERTY(VisibleAnywhere)
-	FRotator Rotation = FRotator::ZeroRotator;
-
-	UPROPERTY(VisibleAnywhere)
-	FVector Scale3D = FVector::OneVector;
 
 	UPROPERTY(VisibleAnywhere)
 	float AlphaAge = -1.;
@@ -97,6 +98,25 @@ public:
 
 protected:
 	/**
+	 * Number of square cm any given Canvas Pixel should represent (must be >= KINDA_SMALL_NUMBER)
+	 */
+	UPROPERTY(Config, meta=(ForceUnits="cm", ClampMin=0.0001))
+	float CanvasPixelWorldSize;
+
+	/**
+	 * Soft object path to the RenderTarget this subsystem will use for visualization
+	 */
+	UPROPERTY(Config)
+	TSoftObjectPtr<UTextureRenderTarget2D> SoftRenderTarget;
+
+	/**
+	 * Name of AStaticMeshActor in the world that will give us the world bounds.
+	 * This actor MUST exist in the level or this subsystem will not function.
+	 */
+	UPROPERTY(Config)
+	FName WorldPlaneName;
+
+	/**
 	 * Called during Tick to draw visible Entities to the RenderTarget
 	 */
 	void UpdateEntities();
@@ -107,16 +127,6 @@ protected:
 	 * @return Canvas Point representing the World Location
 	 */
 	FVector2D WorldToCanvas(const FVector& Location) const;
-
-protected:
-	UPROPERTY(Config, meta=(ForceUnits="cm"))
-	float CanvasPixelWorldSize;
-
-	UPROPERTY(Config)
-	TSoftObjectPtr<UTextureRenderTarget2D> SoftRenderTarget;
-
-	UPROPERTY(Config)
-	FName WorldPlaneName;
 
 private:
 	UPROPERTY(Transient)
