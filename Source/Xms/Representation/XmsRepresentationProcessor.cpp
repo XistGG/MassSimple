@@ -4,6 +4,7 @@
 
 #include "MassExecutionContext.h"
 #include "XmsRepSubsystem.h"
+#include "Attributes/Lifespan/XmsLifespan.h"
 #include "EntityRegistry/XmsEntityMetaData.h"
 #include "Misc/XmsFragments.h"
 
@@ -24,6 +25,7 @@ void UXmsRepresentationProcessor::ConfigureQueries(const TSharedRef<FMassEntityM
 {
 	Query.AddTagRequirement<FXmsT_Representation>(EMassFragmentPresence::All);
 	Query.AddRequirement<FXmsF_Transform>(EMassFragmentAccess::ReadOnly);
+	Query.AddRequirement<FXmsF_Lifespan>(EMassFragmentAccess::ReadOnly, EMassFragmentPresence::Optional);
 	Query.AddConstSharedRequirement<FXmsCSF_MetaData>(EMassFragmentPresence::All);
 
 	ProcessorRequirements.AddSubsystemRequirement<UXmsRepSubsystem>(EMassFragmentAccess::ReadWrite);
@@ -41,7 +43,10 @@ void UXmsRepresentationProcessor::Execute(FMassEntityManager& EntityManager, FMa
 		TotalNumEntities += Context.GetNumEntities();
 
 		const auto& MetaData = Context.GetConstSharedFragment<FXmsCSF_MetaData>();
+		const auto Lifespans = Context.GetFragmentView<FXmsF_Lifespan>();
 		const auto Transforms = Context.GetFragmentView<FXmsF_Transform>();
+
+		const bool bHaveLifespan = Lifespans.Num() > 0;
 
 		TArray<const FXmsEntityRepresentationData> Entities;
 		Entities.Reserve(Context.GetNumEntities());
@@ -50,14 +55,23 @@ void UXmsRepresentationProcessor::Execute(FMassEntityManager& EntityManager, FMa
 		{
 			const FXmsF_Transform& Transform = Transforms[*EntityIt];
 
+			float RelativeAge {-1.};
+			if (bHaveLifespan)
+			{
+				const FXmsF_Lifespan& Lifespan = Lifespans[*EntityIt];
+				RelativeAge = Lifespan.MaxAge >= KINDA_SMALL_NUMBER && not Lifespan.IsImmortal()
+					? Lifespan.CurrentAge / Lifespan.MaxAge
+					: 1.;  // either Immortal or at max expected age
+			}
+
 			const FXmsEntityRepresentationData Data {
 				.Entity = Context.GetEntity(*EntityIt),
 				.MetaType = MetaData.MetaType,
 				.Location = Transform.Location,
 				.Rotation = Transform.Rotation,
 				.Scale3D = Transform.Scale3D,
+				.AgeAlpha = RelativeAge,
 			};
-
 			Entities.Emplace(Data);
 		}
 

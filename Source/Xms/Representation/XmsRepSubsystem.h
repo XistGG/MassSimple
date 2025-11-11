@@ -43,6 +43,9 @@ struct FXmsEntityRepresentationData
 
 	UPROPERTY(VisibleAnywhere)
 	FVector Scale3D = FVector::OneVector;
+
+	UPROPERTY(VisibleAnywhere)
+	float AgeAlpha = -1.;
 };
 
 /**

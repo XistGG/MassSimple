@@ -193,16 +193,18 @@ void UXmsRepSubsystem::UpdateEntities()
 	FDrawToRenderTargetContext Context;
 	UKismetRenderingLibrary::BeginDrawCanvasToRenderTarget(this, RenderTarget, OUT Canvas, OUT Size, OUT Context);
 
+	constexpr double MaxTreeSize = 10.;
+
 	for (const FXmsEntityRepresentationData& Data : *CurrentDataPagePtr)
 	{
-		FVector2D EntitySize (1.);
 		FLinearColor EntityColor (FLinearColor::White);
+		double SizeScale {1.};
 
 		switch (Data.MetaType)
 		{
 		case EXmsEntityMetaType::Tree:
 			EntityColor = FLinearColor::Green;
-			EntitySize *= 2.;
+			SizeScale = FMath::Clamp(Data.AgeAlpha * MaxTreeSize, 1., MaxTreeSize);
 			break;
 		case EXmsEntityMetaType::Wisp:
 			EntityColor = FLinearColor::Yellow;
@@ -210,14 +212,20 @@ void UXmsRepSubsystem::UpdateEntities()
 		default: break;
 		}
 
+		EntityColor.A = 0.6;
+
+		const FVector2D EntitySize (SizeScale);
+		const FVector2D EntityHalfSize (EntitySize / 2.);
+
 #if WITH_XMS_REPRESENTATION_DRAW_DEBUG
+		// Draw a Debug Sphere at this Entity's world location
 		DrawDebugSphere(GetWorld(), Data.Location, 50.0f, 12, FColor::Yellow, true, 5.);
 #endif
 
 		const FVector2D CanvasPoint = WorldToCanvas(Data.Location);
 		const FVector2D CenteredCanvasPoint (
-			FMath::Clamp(CanvasPoint.X - (EntitySize.X / 2.), 0., CanvasSize.X),
-			FMath::Clamp(CanvasPoint.Y - (EntitySize.Y / 2.), 0., CanvasSize.Y)
+			FMath::Clamp(CanvasPoint.X - EntityHalfSize.X, 0., CanvasSize.X),
+			FMath::Clamp(CanvasPoint.Y - EntityHalfSize.Y, 0., CanvasSize.Y)
 			);
 
 		FCanvasTileItem TileItem (CenteredCanvasPoint, GWhiteTexture, EntitySize, EntityColor);
