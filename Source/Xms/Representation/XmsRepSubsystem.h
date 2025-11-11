@@ -8,6 +8,9 @@
 
 #include "XmsRepSubsystem.generated.h"
 
+class AStaticMeshActor;
+class UTextureRenderTarget2D;
+
 /**
  * FXmsT_Representation
  */
@@ -48,7 +51,7 @@ struct FXmsEntityRepresentationData
  * This subsystem makes the assumption that ONLY ONE Mass Processor will be
  * calling into its Mass* methods. In that case, it is thread-safe.
  */
-UCLASS()
+UCLASS(Config=Xms)
 class XMS_API UXmsRepSubsystem
 	: public UMassTickableSubsystemBase
 {
@@ -58,11 +61,13 @@ public:
 	static UXmsRepSubsystem* Get(TNotNull<const UWorld*> World);
 	static UXmsRepSubsystem& GetChecked(TNotNull<const UWorld*> World);
 
+	// Set Class Defaults
 	UXmsRepSubsystem();
 
 	//~Begin UWorldSubsystem interface
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
+	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 	//~End UWorldSubsystem interface
 
 	//~Begin UTickableWorldSubsystem interface
@@ -93,10 +98,41 @@ protected:
 	 */
 	void UpdateEntities();
 
+	/**
+	 * 
+	 * @param Location
+	 * @return 
+	 */
+	FVector2D WorldToCanvas(const FVector& Location) const;
+
+protected:
+	UPROPERTY(Config)
+	float CanvasScale;
+
+	UPROPERTY(Config)
+	TSoftObjectPtr<UTextureRenderTarget2D> SoftRenderTarget;
+
+	UPROPERTY(Config)
+	FName WorldPlaneName;
+
 private:
+	UPROPERTY(Transient)
+	FIntVector2 CanvasSize;
+
+	UPROPERTY(Transient)
+	FVector WorldOrigin;
+
+	UPROPERTY(Transient)
+	FVector WorldExtent;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextureRenderTarget2D> RenderTarget;
+
+	UPROPERTY(Transient)
+	TObjectPtr<AStaticMeshActor> WorldPlaneActor;
+
 	TStaticArray<TArray<const FXmsEntityRepresentationData>, 3> EntityDataPages;
 	FTransactionallySafeRWLock EntityDataPageLock;
-	uint64 DataSerialNumber;
 	int32 EntityDataCurrentPage;
 	int32 EntityDataTempPage;
 };
