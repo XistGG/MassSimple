@@ -1,37 +1,34 @@
-// Copyright (c) 2025 Xist.GG LLC
+﻿// Copyright (c) 2025 Xist.GG LLC
 
-#include "XmsEntityAutoBuilder.h"
+#include "XmsEntityBuilderComponent.h"
 
 #include "MassEntityBuilder.h"
 #include "MassEntityManager.h"
 #include "MassEntityUtils.h"
 #include "XmsLog.h"
-#include "Engine/World.h"
-#include "EntityRegistry/XmsEntityMetaData.h"
-#include "GameFramework/Pawn.h"
-#include "GameFramework/PlayerController.h"
+#include "GameFramework/Actor.h"
 #include "Misc/XmsFragments.h"
+#include "Representation/XmsRepSubsystem.h"
 
-// Sets default values
-AXmsEntityAutoBuilder::AXmsEntityAutoBuilder(const FObjectInitializer& ObjectInitializer)
+// Set Class Defaults
+UXmsEntityBuilderComponent::UXmsEntityBuilderComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.bStartWithTickEnabled = true;
-
-	SetHidden(true);
+	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bStartWithTickEnabled = true;
 
 	EntityMetaType = EXmsEntityMetaType::Wisp;
+	bAutoBuildEnabled = true;
 	AutoBuildIntervalSeconds = 1.;
 }
 
-void AXmsEntityAutoBuilder::Tick(float DeltaSeconds)
+void UXmsEntityBuilderComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	Super::Tick(DeltaSeconds);
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// If it's time to auto-build a new Entity, then do it now.
 
-	TimeToNextAutoBuild -= DeltaSeconds;
+	TimeToNextAutoBuild -= DeltaTime;
 
 	if (IsAutoBuildEnabled()
 		&& TimeToNextAutoBuild <= 0.)
@@ -41,7 +38,7 @@ void AXmsEntityAutoBuilder::Tick(float DeltaSeconds)
 	}
 }
 
-FMassEntityHandle AXmsEntityAutoBuilder::BuildEntity()
+FMassEntityHandle UXmsEntityBuilderComponent::BuildEntity()
 {
 	UE_VLOG_UELOG(this, LogXmsBuilder, Verbose, TEXT("%hs: %s: Building Entity"),
 		__FUNCTION__, *GetClass()->GetName());
@@ -64,43 +61,37 @@ FMassEntityHandle AXmsEntityAutoBuilder::BuildEntity()
 	return Entity;
 }
 
-void AXmsEntityAutoBuilder::SetupEntityBuilder(UE::Mass::FEntityBuilder& Builder)
+void UXmsEntityBuilderComponent::SetupEntityBuilder(UE::Mass::FEntityBuilder& Builder)
 {
+	const AActor* OwnerActor = GetOwner();
+	check(OwnerActor);
+
 	// Set up Entity MetaData fragment
 	FXmsCSF_MetaData MetaData {
 		.MetaType = EntityMetaType,
 	};
-	Builder.Add<FXmsCSF_MetaData>(MetaData);
 
 	// Warn if/when the MetaData is invalid
 	UE_CVLOG_UELOG(not MetaData.IsValid(), this, LogXmsBuilder, Warning,
 		TEXT("%hs: %s: Invalid MetaData for reserved Entity [%s]"),
 		__FUNCTION__, *GetClass()->GetName(), *Builder.GetEntityHandle().DebugGetDescription());
 
+	// Spawn the Entity with a copy of the owner actor's current transform
+	FXmsF_Transform Transform {
+		.Location = OwnerActor->GetActorLocation(),
+		.Rotation = OwnerActor->GetActorRotation(),
+		.Scale3D = OwnerActor->GetActorScale(),
+	};
+
+	// Configure Builder
+
+	Builder.Add<FXmsCSF_MetaData>(MetaData);
+	Builder.Add<FXmsF_Transform>(Transform);
+
+	// For now, tag all Entities as being visible
+	Builder.Add<FXmsT_Representation>();
+
 	// Mass Observers apparently cannot observe Const Shared Fragments for created Entities,
 	// so we will use this Tag for Observer compatibility.
 	Builder.Add<FXmsT_Registry>();
-
-	// Set the transform for the Entity
-	FXmsF_Transform EntityTransform;
-	InitEntityTransform(OUT EntityTransform);
-	Builder.Add<FXmsF_Transform>(EntityTransform);
-}
-
-void AXmsEntityAutoBuilder::InitEntityTransform(FXmsF_Transform& OutTransform)
-{
-	const UWorld* World = GetWorld();
-	check(World);
-
-	if (const APlayerController* PC = World->GetFirstPlayerController();
-		const APawn* Pawn = PC ? PC->GetPawn() : nullptr)
-	{
-		OutTransform.Location = Pawn->GetActorLocation();
-		OutTransform.Rotation = Pawn->GetActorRotation();
-		OutTransform.Scale3D = FVector::OneVector;
-		return;
-	}
-
-	// Ensure OutTransform is a default transform
-	OutTransform = FXmsF_Transform();
 }

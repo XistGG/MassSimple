@@ -1,11 +1,11 @@
-// Copyright (c) 2025 Xist.GG LLC
+﻿// Copyright (c) 2025 Xist.GG LLC
 
 #pragma once
 
 #include "MassEntityHandle.h"
 #include "EntityRegistry/XmsEntityMetaData.h"
-#include "GameFramework/Actor.h"
-#include "XmsEntityAutoBuilder.generated.h"
+#include "Components/ActorComponent.h"
+#include "XmsEntityBuilderComponent.generated.h"
 
 namespace UE::Mass
 {
@@ -15,26 +15,29 @@ namespace UE::Mass
 struct FXmsF_Transform;
 
 /**
- * AXmsEntityAutoBuilder
+ * UXmsEntityBuilderComponent
+ *
+ * One of these components exists on the Character Blueprint in Editor.
+ * This builds the Wisp Entities around the Player Pawn.
  */
-UCLASS()
-class XMS_API AXmsEntityAutoBuilder
-	: public AActor
+UCLASS(meta=(BlueprintSpawnableComponent))
+class XMS_API UXmsEntityBuilderComponent
+	: public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
-	// Set Class Defaults
-	AXmsEntityAutoBuilder(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	// Sets default values for this component's properties
+	UXmsEntityBuilderComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	//~Begin UObject interface
-	virtual void Tick(float DeltaSeconds) override;
-	//~End UObject interface
+	//~Begin UActorComponent interface
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	//~End UActorComponent interface
 
 	/**
 	 * @return True if AutoBuild is enabled, else False.
 	 */
-	bool IsAutoBuildEnabled() const { return AutoBuildIntervalSeconds >= 0.; }
+	bool IsAutoBuildEnabled() const { return bAutoBuildEnabled && AutoBuildIntervalSeconds >= 0.; }
 
 protected:
 	/**
@@ -42,6 +45,12 @@ protected:
 	 */
 	UPROPERTY(EditAnywhere, Category=Xms)
 	EXmsEntityMetaType EntityMetaType;
+
+	/**
+	 * When True, AutoBuild is enabled. When False, AutoBuild is disabled.
+	 */
+	UPROPERTY(EditAnywhere, Category=Xms)
+	bool bAutoBuildEnabled;
 
 	/**
 	 * Interval (in seconds) between Entity auto-builds.
@@ -64,12 +73,6 @@ protected:
 	 * @param Builder 
 	 */
 	virtual void SetupEntityBuilder(UE::Mass::FEntityBuilder& IN OUT Builder);
-
-	/**
-	 * 
-	 * @param OutTransform 
-	 */
-	virtual void InitEntityTransform(FXmsF_Transform& OUT OutTransform);
 
 private:
 	/** Time (seconds) until the next AutoBuild should trigger (only valid when IsAutoBuildEnabled()==true) */
