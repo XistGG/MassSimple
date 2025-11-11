@@ -106,8 +106,8 @@ protected:
 	FVector2D WorldToCanvas(const FVector& Location) const;
 
 protected:
-	UPROPERTY(Config)
-	float CanvasScale;
+	UPROPERTY(Config, meta=(ForceUnits="cm"))
+	float CanvasPixelWorldSize;
 
 	UPROPERTY(Config)
 	TSoftObjectPtr<UTextureRenderTarget2D> SoftRenderTarget;
@@ -126,6 +126,9 @@ private:
 	FVector WorldExtent;
 
 	UPROPERTY(Transient)
+	FVector WorldSize;
+
+	UPROPERTY(Transient)
 	TObjectPtr<UTextureRenderTarget2D> RenderTarget;
 
 	UPROPERTY(Transient)
@@ -135,6 +138,13 @@ private:
 	FTransactionallySafeRWLock EntityDataPageLock;
 	int32 EntityDataCurrentPage;
 	int32 EntityDataTempPage;
+
+	/**
+	 * Iterate World's Actors, looking for the one we expect is the WorldPlane
+	 * @param World The World in which to search
+	 * @return nullptr, or the WorldPlane actor if found
+	 */
+	AStaticMeshActor* FindWorldPlane(const UWorld& World) const;
 };
 
 template<>
