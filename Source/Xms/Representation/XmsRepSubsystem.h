@@ -45,7 +45,7 @@ struct FXmsEntityRepresentationData
 	FVector Scale3D = FVector::OneVector;
 
 	UPROPERTY(VisibleAnywhere)
-	float AgeAlpha = -1.;
+	float AlphaAge = -1.;
 };
 
 /**
@@ -97,14 +97,14 @@ public:
 
 protected:
 	/**
-	 * 
+	 * Called during Tick to draw visible Entities to the RenderTarget
 	 */
 	void UpdateEntities();
 
 	/**
-	 * 
-	 * @param Location
-	 * @return 
+	 * Convert a World Location to a Canvas Point
+	 * @param Location The World Location of interest
+	 * @return Canvas Point representing the World Location
 	 */
 	FVector2D WorldToCanvas(const FVector& Location) const;
 

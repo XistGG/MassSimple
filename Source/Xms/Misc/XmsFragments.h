@@ -15,12 +15,12 @@ struct FXmsF_Transform
 {
 	GENERATED_BODY()
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere)
 	FVector Location = FVector::ZeroVector;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere)
 	FRotator Rotation = FRotator::ZeroRotator;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere)
 	FVector Scale3D = FVector::OneVector;
 };

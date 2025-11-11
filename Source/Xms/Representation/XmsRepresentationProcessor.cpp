@@ -70,7 +70,7 @@ void UXmsRepresentationProcessor::Execute(FMassEntityManager& EntityManager, FMa
 				.Location = Transform.Location,
 				.Rotation = Transform.Rotation,
 				.Scale3D = Transform.Scale3D,
-				.AgeAlpha = RelativeAge,
+				.AlphaAge = RelativeAge,
 			};
 			Entities.Emplace(Data);
 		}

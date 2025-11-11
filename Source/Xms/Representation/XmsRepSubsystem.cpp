@@ -180,7 +180,7 @@ void UXmsRepSubsystem::UpdateEntities()
 	int32 CurrentPage;
 	{
 		UE::TReadScopeLock ReadLock (EntityDataPageLock);
-		CurrentPage = EntityDataCurrentPage;  // COPY the data
+		CurrentPage = EntityDataCurrentPage;
 	}
 
 	check(CurrentPage >= 0 && CurrentPage < EntityDataPages.Num());
@@ -204,7 +204,7 @@ void UXmsRepSubsystem::UpdateEntities()
 		{
 		case EXmsEntityMetaType::Tree:
 			EntityColor = FLinearColor::Green;
-			SizeScale = FMath::Clamp(Data.AgeAlpha * MaxTreeSize, 1., MaxTreeSize);
+			SizeScale = FMath::Clamp(Data.AlphaAge * MaxTreeSize, 1., MaxTreeSize);
 			break;
 		case EXmsEntityMetaType::Wisp:
 			EntityColor = FLinearColor::Yellow;

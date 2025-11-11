@@ -29,7 +29,7 @@ struct FXmsCSF_MetaData
 {
 	GENERATED_BODY()
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere)
 	EXmsEntityMetaType MetaType = EXmsEntityMetaType::None;
 
 	// MetaSubType

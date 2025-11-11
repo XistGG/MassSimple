@@ -4,6 +4,11 @@
 
 #include "MassExecutionContext.h"
 #include "XmsLifespan.h"
+#include "XmsLog.h"
+
+//----------------------------------------------------------------------//
+//  UXmsLifespanEnforcer
+//----------------------------------------------------------------------//
 
 UXmsLifespanEnforcer::UXmsLifespanEnforcer()
 	: Query(*this)
@@ -23,7 +28,7 @@ void UXmsLifespanEnforcer::Execute(FMassEntityManager& EntityManager, FMassExecu
 {
 	QUICK_SCOPE_CYCLE_COUNTER(UXmsLifespanEnforcer);
 
-	Query.ParallelForEachEntityChunk(Context, [](FMassExecutionContext& Context)
+	Query.ParallelForEachEntityChunk(Context, [LogObject=this](FMassExecutionContext& Context)
 	{
 		TArray<FMassEntityHandle> EntitiesToDestroy;
 
@@ -45,6 +50,11 @@ void UXmsLifespanEnforcer::Execute(FMassEntityManager& EntityManager, FMassExecu
 		// Schedule the destruction of Entities that are too old
 		if (EntitiesToDestroy.Num() > 0)
 		{
+#if WITH_XMS_DEBUG
+			UE_VLOG_UELOG(LogObject, LogXms, Verbose, TEXT("%hs: Destroy %i Entities due to old age"),
+				__FUNCTION__, EntitiesToDestroy.Num());
+#endif
+
 			Context.Defer().DestroyEntities(EntitiesToDestroy);
 		}
 	});

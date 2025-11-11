@@ -27,13 +27,13 @@ struct FXmsF_Lifespan
 {
 	GENERATED_BODY()
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere)
 	EXmsEntityLifespanFlags Flags = EXmsEntityLifespanFlags::None;
 
 	UPROPERTY(VisibleAnywhere)
 	float CurrentAge = 0.;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(EditAnywhere, meta=(ClampMin=0))
 	float MaxAge = 0.;
 
 	inline bool IsImmortal() const;
