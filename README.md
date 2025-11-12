@@ -23,6 +23,7 @@ This simple example of a UE5 Mass C++ project:
 - Future Roadmap:
     - Demonstrate Writing Mass Entity Data from Gameplay Code
     - Add more Reading Mass Entity Data from Gameplay Code examples
+    - Demonstrate Adding/Removing Entity Representation Tags at Runtime
     - Demonstrate Creating Entities in Processors
 
 Detailed performance profiling, analysis and optimization is beyond the scope of this example.
@@ -33,10 +34,15 @@ I expect that you will optimize your code to your own specifications.
 
 ## Entity Registry
 
-The Entity Registry concept is implemented using a subsystem and some Mass Observer processors.
+The Entity Registry is how the Game code keeps track of interesting Entities that it needs to be aware of
+for whatever reason.
 
-In this implementation, the Meta Data is a Const Shared Fragment.
+There may be many more thousands of Entities existing internally in Mass that the Game code doesn't care about,
+and none of those should be configured to be tracked by the Registry.
 
+For each Entity that we care to Register, we will remember its `EntityHandle` and some Meta Data.
+
+This concept is mostly implemented using a subsystem and some Mass Observer processors.
 Every Entity that wants to participate in the Registry **must** have a
 `FXmsT_Registry` Tag.
 All Entities without this tag are ignored by the Registry system.
@@ -53,6 +59,18 @@ Using `TMassExternalSubsystemTraits`:
 |---|---|---|
 | `GameThreadOnly` | `false` | YES read thread-safe |
 | `ThreadSafeWrite` | `true` | YES write thread-safe |
+
+#### Registry Subsystem Requirements
+
+Notice that this subsystem imposes some requirements on its use.
+
+1. You must only subscribe/unsubscribe from events on the Game thread
+2. Any code executed in response to events broadcast by this Subsystem **must not** try to subscribe/unsubscribe
+   Event delegates or **the game will deadlock**.
+   - TLDR: make sure to subcribe/unsubscribe using non-Event-triggered code
+
+Currently there is only 1 simple accessor to get Entity data, `GetEntitiesByMetaType`,
+which is read-safe from any thread.
 
 ### Entity Registry Processors
 Source Code:
@@ -78,7 +96,7 @@ Source Code: [ [h](Source/Xms/EntityRegistry/XmsEntityMetaData.h) ]
 
 An example Meta Type. Here we have just Rock, Tree and Wisp.
 
-Currently we don't use the Rock.
+Currently we don't use the `Rock`.
 
 `Tree` Entities are automatically built periodically by the
 [AXmsEntityTreeBuilder](#AXmsEntityTreeBuilder).
@@ -139,7 +157,7 @@ Source Code:
 | [cpp](Source/Xms/EntityBuilders/XmsEntityBuilderComponent.cpp)
 ]
 
-The `BP_Character` in game has one of these components on it.
+The `BP_Character` Player Pawn in game has one of these components on it.
 
 When Active, this component causes `Wisp` Entities to be built
 at a periodic interval, at the current owner Actor's location
@@ -163,13 +181,36 @@ at a periodic interval, at a random World Location within the
 Actor bounds.
 (The base Actor is `AVolume` to provide the UEditor bounds controls).
 
+See `AXmsEntityTreeBuilder::SetupEntityBuilder`
+for the exact configuration used to build a `Tree`.
+
 ## Entity Attributes
 
 ### Lifespan Attribute
 
+The Lifespan is an optional Attribute.
+
+Any Entity that has a `FXmsF_Lifespan` will have its `CurrentAge` auto-incremented each Frame
+by the simulation `DeltaTime`.
+Unless Immortal, Entities will be Destroyed at the end of the tick when they reach their `MaxAge`.
+
 #### Lifespan Flags: `EXmsEntityLifespanFlags`
+Source Code: [ [h](Source/Xms/Attributes/Lifespan/XmsLifespan.h) ]
+
+| Bit | Meaning            |
+|-----|--------------------|
+| 0   | Entity is Immortal |
+
+Add more bits as needed for your Lifespan needs.
 
 #### Lifespan Fragment: `FXmsF_Lifespan`
+Source Code: [ [h](Source/Xms/Attributes/Lifespan/XmsLifespan.h) ]
+
+The presence of this Fragment on an Entity will cause it to participate in the
+Lifespan system.
+
+Every Entity without this Fragment is effectively Immortal
+as far as the Lifespan system is concerned.
 
 #### Lifespan Processors
 Source Code:
@@ -184,15 +225,55 @@ Source Code:
 
 ## Entity Representation
 
-### Subsystem:`UXmsRepSubsystem`
+UE5 Mass Default Representation is **disabled** in this project.
+This means no Entities appear in the world at all unless we explicitly put them there.
+
+For now, the Representation system exists purely as an example of how to retrieve the data
+from Mass into your Game and/or Render thread.
+It is expected that you will implement your own Entity Representation.
+
+#### Beware the CPU Abuse
+
+As a fun way to abuse the CPU and make it do graphics work, the current Representation system
+uses the CPU to draw tiles onto a Render Target.
+
+It does this up to every single Frame,
+for every single Entity with a `FXmsT_Represent` tag.
+
+As you can imagine, this destroys the frame rate when there are many Entities being visualized
+in this way. Use with caution.
+
+This is an intentional design choice for this example project, since it is **very easy**
+to show how the data gets from point A to point B and you can see it happen every frame
+for every Entity.
+
+Before you ship a game with something like this, you'll want to optimize the shit out of it.
+
+### Representation Subsystem:`UXmsRepSubsystem`
 Source Code:
 [ [h](Source/Xms/Representation/XmsRepSubsystem.h)
 | [cpp](Source/Xms/Representation/XmsRepSubsystem.cpp)
 ]
 
-#### Representation Tag: `FXmsT_Represent`
+Using `TMassExternalSubsystemTraits`:
 
-#### Representation Data: `FXmsEntityRepresentationData`
+| Trait | Value | Notes |
+|---|---|---|
+| `GameThreadOnly` | `false` | YES read thread-safe |
+| `ThreadSafeWrite` | `true` | YES write thread-safe |
+
+#### Representation Subsystem Requirements
+
+Notice that this subsystem imposes some requirements on its use.
+
+1. ONLY ONE Processor may write to it: `UXmsRepresentationProcessor`
+    - Parallel threads from this one processor are supported
+
+##### Representation Subsystem Caveats
+
+- We need to know the "World Bounds" for representation
+    - We get this from the Actor with the Scene Outliner Label = `WorldPlane`
+        - This methodology only works in Development
 
 ### Representation Processors
 
@@ -203,6 +284,18 @@ Source Code:
 	- Executes in `FrameEnd`, copies data to be displayed next frame
 	- Copy `FXmsEntityRepresentationData` for each Entity with `FXmsT_Represent` Tag
 		- **Parallel execution** uses a thread-safe method for data egress to `UXmsRepSubsystem`
+
+#### Representation Tag: `FXmsT_Represent`
+Source Code: [ [h](Source/Xms/Representation/XmsRepSubsystem.h) ]
+
+- Presence of this tag identifies an Entity that will be Represented in the World
+    - The tag may be added or removed at runtime
+
+#### Representation Data: `FXmsEntityRepresentationData`
+Source Code: [ [h](Source/Xms/Representation/XmsRepSubsystem.h) ]
+
+- This is the `struct` that gets copied from Mass for every Entity we want to Represent
+- You can easily imagine granting access to more/less/different data
 
 ## Game Setup
 
