@@ -50,14 +50,16 @@ protected:
 	 * @param MetaType The Entity's meta type
 	 * @param EntityContexts Array of Entity Contexts of this meta type
 	 */
-	virtual void NativeOnObservedEntitiesCreated(const EXmsEntityMetaType& MetaType, const TArray<UXmsRegistrySubsystem::FEntityContext>& EntityContexts);
+	virtual void NativeOnObservedEntitiesCreated(const EXmsEntityMetaType& MetaType, const TArray<UXmsRegistrySubsystem::FEntityContext>& EntityContexts)
+		PURE_VIRTUAL(AXmsEntityRegistryListener::NativeOnObservedEntitiesCreated, )
 
 	/**
 	 * Callback executed by the base XmsEntityRegistryListener when an observed Entity Type is destroyed
 	 * @param MetaType The Entity's meta type
 	 * @param EntityContexts Array of Entity Contexts of this meta type
 	 */
-	virtual void NativeOnObservedEntitiesDestroyed(const EXmsEntityMetaType& MetaType, const TArray<UXmsRegistrySubsystem::FEntityContext>& EntityContexts);
+	virtual void NativeOnObservedEntitiesDestroyed(const EXmsEntityMetaType& MetaType, const TArray<UXmsRegistrySubsystem::FEntityContext>& EntityContexts)
+		PURE_VIRTUAL(AXmsEntityRegistryListener::NativeOnObservedEntitiesDestroyed, )
 
 private:
 	FDelegateHandle OnEntitiesCreatedHandle;

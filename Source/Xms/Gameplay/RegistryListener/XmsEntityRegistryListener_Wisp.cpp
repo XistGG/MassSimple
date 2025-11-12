@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2025 Xist.GG LLC
+// Copyright (c) 2025 Xist.GG LLC
 
 #include "XmsEntityRegistryListener_Wisp.h"
 
@@ -32,7 +32,7 @@ void AXmsEntityRegistryListener_Wisp::BeginPlay()
 
 void AXmsEntityRegistryListener_Wisp::NativeOnObservedEntitiesCreated(const EXmsEntityMetaType& MetaType, const TArray<UXmsRegistrySubsystem::FEntityContext>& EntityContexts)
 {
-	// Super doesn't do anything, don't need to call it
+	// DO NOT CALL PURE VIRTUAL SUPER
 	//-Super::NativeOnObservedEntitiesCreated(MetaType, EntityContexts);
 
 	if (NiagaraSystem)
@@ -55,8 +55,11 @@ void AXmsEntityRegistryListener_Wisp::NativeOnObservedEntitiesCreated(const EXms
 
 void AXmsEntityRegistryListener_Wisp::NativeOnObservedEntitiesDestroyed(const EXmsEntityMetaType& MetaType, const TArray<UXmsRegistrySubsystem::FEntityContext>& EntityContexts)
 {
-	// Super doesn't do anything, don't need to call it
+	// DO NOT CALL PURE VIRTUAL SUPER
 	//-Super::NativeOnObservedEntitiesDestroyed(MetaType, EntityContexts);
 
-	// ...
+	// You could for example remember all the things you spawned, and now despawn them
+	// or otherwise clean them up.
+
+	// In our case, the Niagara Systems despawn themselves after they execute a single animation loop.
 }

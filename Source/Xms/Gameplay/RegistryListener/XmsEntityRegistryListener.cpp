@@ -67,13 +67,3 @@ void AXmsEntityRegistryListener::NativeOnEntitiesDestroyed(const TArray<UXmsRegi
 		NativeOnObservedEntitiesDestroyed(MetaType, EntityContexts);
 	}
 }
-
-void AXmsEntityRegistryListener::NativeOnObservedEntitiesCreated(const EXmsEntityMetaType& MetaType, const TArray<UXmsRegistrySubsystem::FEntityContext>& EntityContexts)
-{
-	// Base class Empty
-}
-
-void AXmsEntityRegistryListener::NativeOnObservedEntitiesDestroyed(const EXmsEntityMetaType& MetaType, const TArray<UXmsRegistrySubsystem::FEntityContext>& EntityContexts)
-{
-	// Base class Empty
-}
