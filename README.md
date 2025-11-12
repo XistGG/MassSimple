@@ -44,7 +44,7 @@ I expect that you will optimize your code to your own specifications.
 - [Entity Attributes](#entity-attributes)
     - [Lifespan](#lifespan-attribute)
 - [Entity Representation](#entity-representation)
-- Naming Conventions
+- [Naming Conventions](#naming-conventions)
 
 ## Entity Registry
 
