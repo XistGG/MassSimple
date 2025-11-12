@@ -6,6 +6,7 @@
 #include "MassEntityManager.h"
 #include "MassEntityUtils.h"
 #include "XmsLog.h"
+#include "EntityRegistry/XmsEntityRegistry.h"
 #include "GameFramework/Actor.h"
 #include "Misc/XmsFragments.h"
 #include "Representation/XmsRepSubsystem.h"

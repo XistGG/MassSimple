@@ -7,6 +7,7 @@
 #include "MassEntityUtils.h"
 #include "XmsLog.h"
 #include "EntityRegistry/XmsEntityMetaData.h"
+#include "EntityRegistry/XmsEntityRegistry.h"
 #include "Misc/XmsFragments.h"
 #include "Representation/XmsRepSubsystem.h"
 
