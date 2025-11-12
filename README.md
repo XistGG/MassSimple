@@ -32,6 +32,13 @@ There are many ways you can improve the efficiency of this code, each of which w
 complex and more difficult to understand.
 I expect that you will optimize your code to your own specifications.
 
+# Project Overview
+
+- [Entity Registry](#H_EntityRegistry)
+	- [Registry Subsystem](#UXmsRegistrySubsystem)
+    - [Registry Processors](#entity-registry-processors)
+
+<a id='H_EntityRegistry'></a>
 ## Entity Registry
 
 The Entity Registry is how the Game code keeps track of interesting Entities that it needs to be aware of
@@ -47,6 +54,7 @@ Every Entity that wants to participate in the Registry **must** have a
 `FXmsT_Registry` Tag.
 All Entities without this tag are ignored by the Registry system.
 
+<a id='UXmsRegistrySubsystem'></a>
 ### Registry Subsystem: `UXmsRegistrySubsystem`
 Source Code:
 [ [h](Source/Xms/EntityRegistry/XmsEntityRegistry.h)
