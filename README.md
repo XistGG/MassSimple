@@ -1,7 +1,10 @@
 # Mass Simple C++ Example
 
-| [<img src="MassSimple.png">](http://example.com/) | Target UE Version: **5.7**<br/><br/>`MassSimple` is a simple example of how to do basic things in UE5 Mass C++.<br/><br/>Main Repo: https://github.com/XistGG/MassSimple |
-|---|---|
+| [<img src="MassSimple.png">](https://github.com/XistGG/MassSimple) | Read the Docs: https://x157.github.io/UE5/Mass/MassSimple<br/><br/>`MassSimple` is a simple example of how to do basic things in UE5 Mass C++.<br/><br/>Target UE Version: **5.7** |
+|---|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+
+MAKE SURE YOU READ THE [OFFICIAL DOCUMENTATION](https://x157.github.io/UE5/Mass/MassSimple):
+https://x157.github.io/UE5/Mass/MassSimple
 
 I'm not going for lots of features here, I'm going for practical examples in minimalist C++
 to hopefully make it as easy as possible to observe coding patterns and methodologies
