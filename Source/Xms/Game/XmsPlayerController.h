@@ -7,6 +7,7 @@
 #include "GameFramework/PlayerController.h"
 #include "XmsPlayerController.generated.h"
 
+struct FInputActionInstance;
 class UNiagaraSystem;
 class UInputMappingContext;
 class UInputAction;
@@ -43,7 +44,11 @@ protected:
 	/** IMC */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
 	TObjectPtr<UInputMappingContext> DefaultMappingContext;
-	
+
+	/** Mouse Scroll Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
+	TObjectPtr<UInputAction> CameraZoomAction;
+
 	/** Click to Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input)
 	TObjectPtr<UInputAction> SetDestinationClickAction;
@@ -61,6 +66,7 @@ protected:
 	//~End of AActor interface
 
 	/** Input handlers for SetDestination action. */
+	void OnCameraZoom(const FInputActionInstance& InputActionInstance);
 	void OnInputStarted();
 	void OnSetDestinationTriggered();
 	void OnSetDestinationReleased();
@@ -73,6 +79,9 @@ protected:
 
 	UPROPERTY(Config, VisibleAnywhere)
 	FString IMCPath;
+
+	UPROPERTY(Config, VisibleAnywhere)
+	FString CameraZoomActionPath;
 
 	UPROPERTY(Config, VisibleAnywhere)
 	FString SetDestClickActionPath;
