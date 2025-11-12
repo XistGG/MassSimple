@@ -10,6 +10,19 @@
 #include "XmsEntityRegistry.generated.h"
 
 /**
+ * FXmsT_Registry
+ *
+ * An Entity must be tagged with this tag to be seen by the XmsEntityRegistry observer
+ * processors, thus any Entity that wants to be in the Registry requires this tag.
+ */
+USTRUCT()
+struct FXmsT_Registry
+	: public FMassTag
+{
+	GENERATED_BODY()
+};
+
+/**
  * UXmsRegistrySubsystem
  */
 UCLASS(Config=Xms)
