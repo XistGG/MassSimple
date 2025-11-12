@@ -1,8 +1,7 @@
 # Mass Simple C++ Example
 
-Target UE Version: **5.7**
-
-`MassSimple` is intended to be a simple example of how to do some basic things in UE5 Mass C++.
+| [<img src="MassSimple.png">](http://example.com/) | Target UE Version: **5.7**<br/><br/>`MassSimple` is a simple example of how to do basic things in UE5 Mass C++.<br/><br/>Main Repo: https://github.com/XistGG/MassSimple |
+|---|---|
 
 I'm not going for lots of features here, I'm going for practical examples in minimalist C++
 to hopefully make it as easy as possible to observe coding patterns and methodologies
@@ -10,15 +9,28 @@ when working in multi-threaded Mass C++.
 
 Note that some of Epic's default processors and subsystems are also multi-threaded, and
 some of them are not. The patterns you see them using will differ accordingly.
-I have tried to generalize their approaches for this multi-threaded example.
+I have tried to generalize their approaches for this example.
 
 Note also that I am not perfect *(I know it is shocking)* and so if I have made any mistakes
 or if you know a better way to do something, please do share your expertise,
 I will appreciate your input.
 
+## Note on Render Target usage
+
+I know I am completely abusing Render Targets.  The Render Target usage here is brute force
+and full of inefficiencies.  The RenderTarget abuse causes some hitches if/when there are
+too many Entities being visualized, and currently the project is set up to visualize **all**
+Entities, so...  `:-)`
+
+The purpose of the Render Target isn't to demonstrate best practices for drawing with the CPU,
+instead it is simply to show the data pipeline from `Mass -> Game -> Render`, with the
+expectation that you would replace the Representation system with your own custom implementation
+doing whatever is appropriate for your game.
+
 ## Use `DebugGame` Build Configuration
 
-This project is intended to be developed in the `DebugGame` build configuration.
+This project is intended to be developed in either the `DebugGame` build configuration
+*(with additional debug code enabled)* or in `Development`.
 
 ### Notice: `MassGameplay` Dependency
 
