@@ -34,11 +34,18 @@ I expect that you will optimize your code to your own specifications.
 
 # Project Overview
 
-- [Entity Registry](#H_EntityRegistry)
-	- [Registry Subsystem](#UXmsRegistrySubsystem)
+- [Entity Registry](#entity-registry)
+	- [Registry Subsystem](#registry-subsystem-uxmsregistrysubsystem)
     - [Registry Processors](#entity-registry-processors)
+    - [Registry Listeners](#entity-registry-listeners)
+- [Entity Builders](#entity-builders)
+	- [UXmsEntityBuilderComponent](#actor-component-uxmsentitybuildercomponent)
+	- [AXmsEntityBuilder](#actor-axmsentitytreebuilder)
+- [Entity Attributes](#entity-attributes)
+    - [Lifespan](#lifespan-attribute)
+- [Entity Representation](#entity-representation)
+- Naming Conventions
 
-<a id='H_EntityRegistry'></a>
 ## Entity Registry
 
 The Entity Registry is how the Game code keeps track of interesting Entities that it needs to be aware of
@@ -49,12 +56,6 @@ and none of those should be configured to be tracked by the Registry.
 
 For each Entity that we care to Register, we will remember its `EntityHandle` and some Meta Data.
 
-This concept is mostly implemented using a subsystem and some Mass Observer processors.
-Every Entity that wants to participate in the Registry **must** have a
-`FXmsT_Registry` Tag.
-All Entities without this tag are ignored by the Registry system.
-
-<a id='UXmsRegistrySubsystem'></a>
 ### Registry Subsystem: `UXmsRegistrySubsystem`
 Source Code:
 [ [h](Source/Xms/EntityRegistry/XmsEntityRegistry.h)
@@ -72,12 +73,12 @@ Using `TMassExternalSubsystemTraits`:
 
 Notice that this subsystem imposes some requirements on its use.
 
-1. You must only subscribe/unsubscribe from events on the Game thread
+1. You must only subscribe/unsubscribe while on the Game thread
 2. Any code executed in response to events broadcast by this Subsystem **must not** try to subscribe/unsubscribe
    Event delegates or **the game will deadlock**.
    - TLDR: make sure to subcribe/unsubscribe using non-Event-triggered code
 
-Currently there is only 1 simple accessor to get Entity data, `GetEntitiesByMetaType`,
+Currently there is only one simple accessor to get Entity data, `GetEntitiesByMetaType`,
 which is read-safe from any thread.
 
 ### Entity Registry Processors
@@ -107,10 +108,10 @@ An example Meta Type. Here we have just Rock, Tree and Wisp.
 Currently we don't use the `Rock`.
 
 `Tree` Entities are automatically built periodically by the
-[AXmsEntityTreeBuilder](#AXmsEntityTreeBuilder).
+[AXmsEntityTreeBuilder](#actor-axmsentitytreebuilder).
 
 `Wisp` Entities are automatically built periodically by a
-[UXmsEntityBuilderComponent](#UXmsEntityBuilderComponent)
+[UXmsEntityBuilderComponent](#actor-component-uxmsentitybuildercomponent)
 attached to the Player Pawn.
 
 ### Entity Meta Data: `FXmsCSF_MetaData`
@@ -140,7 +141,6 @@ Source Code:
     - `NativeOnObservedEntitiesCreated`
     - `NativeOnObservedEntitiesDestroyed`
 
-<a id='AXmsEntityRegistryListener_Wisp'></a>
 #### Example Implementation: `AXmsEntityRegistryListener_Wisp`
 Source Code:
 [ [h](Source/Xms/Gameplay/RegistryListener/XmsEntityRegistryListener_Wisp.h)
@@ -158,7 +158,6 @@ a Niagara system at the `Wisp` World Location.
 
 ## Entity Builders
 
-<a id='UXmsEntityBuilderComponent'></a>
 ### Actor Component: UXmsEntityBuilderComponent
 Source Code:
 [ [h](Source/Xms/EntityBuilders/XmsEntityBuilderComponent.h)
@@ -174,7 +173,6 @@ at a periodic interval, at the current owner Actor's location
 See `UXmsEntityBuilderComponent::SetupEntityBuilder`
 for the exact configuration used to build a `Wisp`.
 
-<a id='AXmsEntityTreeBuilder'></a>
 ### Actor: AXmsEntityTreeBuilder
 Source Code:
 [ [h](Source/Xms/EntityBuilders/XmsEntityTreeBuilder.h)
@@ -193,6 +191,11 @@ See `AXmsEntityTreeBuilder::SetupEntityBuilder`
 for the exact configuration used to build a `Tree`.
 
 ## Entity Attributes
+
+Given the basic foundation set forth in this example project, you should be able to add
+additional optional Entity Attributes quite easily.
+
+For now, I've only added a single attribute, the `Lifespan`.
 
 ### Lifespan Attribute
 
@@ -336,7 +339,22 @@ Source Code:
 	- Added camera zoom input using `AXmsCharacter` interface
 - Allow for BP-based class assignments via `DefaultXms.ini`
 
---------------------------------------------------------------------------------
+## Naming Conventions
+
+| Pattern       | Data Type                        |
+|---------------|----------------------------------|
+| `FXmsCSF_Foo` | Mass Const Shared Fragment `Foo` |
+| `FXmsF_Foo`   | Mass Fragment `Foo`              |
+| `FXmsT_Foo`   | Mass Tag `Foo`                   |
+
+Generally I'm not a fan of using `_` in names in UE mainly because of Blueprints.
+In this case, I make an exception, since I find it challenging to know at a glance
+what type of Const Shared Fragment `FXmsFooConstSharedFragment` really is.
+Conversely, `FXmsCSF_Foo` is quite obviously a `Foo` Const Shared Fragment.
+
+Thus, I prefix these special Mass type names with `CSF_`, `F_`, `T_` or others as needed.
+
+# Miscellaneous Thoughts
 
 I'm not going for lots of features here, I'm going for practical examples in minimalist C++
 to hopefully make it as easy as possible to observe coding patterns and methodologies
@@ -357,17 +375,12 @@ and full of inefficiencies.  The RenderTarget abuse causes some hitches if/when 
 too many Entities being visualized, and currently the project is set up to visualize **all**
 Entities, so...  `:-)`
 
-The purpose of the Render Target isn't to demonstrate best practices for drawing with the CPU,
+The purpose of the Render Target is **not** to demonstrate best practices for drawing with the CPU,
 instead it is simply to show the data pipeline from `Mass -> Game -> Render`, with the
 expectation that you would replace the Representation system with your own custom implementation
 doing whatever is appropriate for your game.
 
-## Use `DebugGame` Build Configuration
-
-This project is intended to be developed in either the `DebugGame` build configuration
-*(with additional debug code enabled)* or in `Development`.
-
-### Notice: `MassGameplay` Dependency
+## Notice: `MassGameplay` Dependency
 
 This repository doesn't use *anything* from `MassGameplay`,
 but for some reason the `UMassSimulationSubsystem` is in that module,
@@ -377,9 +390,18 @@ as no processors will ever execute other than Observers.
 If Mass Processors aren't working in your project even though you are sure they should be,
 make sure you enable the `MassGameplay` plugin.
 
-### Uses XistGG Tools
+## Use `DebugGame` Build Configuration
 
-This repository began its instantiation as a refactored
+This project is intended to be developed in the `DebugGame` build configuration
+*(with additional debug code enabled)*.
+
+It also supports the `Development` configuration.
+
+This example project is not intended to package or ship.
+
+### Uses XistGG C++ Dev Tools
+
+This repository began its existance as a refactored
 [XistGame-Template](https://github.com/XistGG/XistGame-Template)
 and follows Xist's typical
 [UE5 Git Repository Setup](https://github.com/XistGG/UE5-Git-Init).
