@@ -12,8 +12,16 @@
 	],
 	"Plugins": [
 		{
+			"Name": "AndroidFileServer",
+			"Enabled": false
+		},
+		{
 			"Name": "Fab",
 			"Enabled": false
+		},
+		{
+			"Name": "MassGameplay",
+			"Enabled": true
 		}
 	]
 }

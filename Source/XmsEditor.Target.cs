@@ -1,7 +1,6 @@
 // Copyright (c) 2025 Xist.GG LLC
 
 using UnrealBuildTool;
-using System.Collections.Generic;
 
 public class XmsEditorTarget : TargetRules
 {

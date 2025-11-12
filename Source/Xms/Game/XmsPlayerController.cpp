@@ -9,8 +9,10 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+#include "XmsCharacter.h"
 #include "XmsLog.h"
 #include "Engine/LocalPlayer.h"
+#include "GameFramework/SpringArmComponent.h"
 
 // Set class defaults
 AXmsPlayerController::AXmsPlayerController(const FObjectInitializer& ObjectInitializer)
@@ -37,6 +39,7 @@ void AXmsPlayerController::BeginPlay()
 	// Help the dev understand if they've misconfigured a required setting
 	ensureMsgf(FXCursor != nullptr, TEXT("%hs: You didn't configure a valid FXCursor"), __FUNCTION__);
 	ensureMsgf(DefaultMappingContext != nullptr, TEXT("%hs: You didn't configure a valid DefaultMappingContext"), __FUNCTION__);
+	ensureMsgf(CameraZoomAction != nullptr, TEXT("%hs: You didn't configure a valid CameraZoomAction"), __FUNCTION__);
 	ensureMsgf(SetDestinationClickAction != nullptr, TEXT("%hs: You didn't configure a valid SetDestinationClickAction"), __FUNCTION__);
 	ensureMsgf(SetDestinationTouchAction != nullptr, TEXT("%hs: You didn't configure a valid SetDestinationTouchAction"), __FUNCTION__);
 }
@@ -66,11 +69,33 @@ void AXmsPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Triggered, this, &AXmsPlayerController::OnTouchTriggered);
 		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Completed, this, &AXmsPlayerController::OnTouchReleased);
 		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Canceled, this, &AXmsPlayerController::OnTouchReleased);
+
+		// Camera Zoom
+		EnhancedInputComponent->BindAction(CameraZoomAction, ETriggerEvent::Triggered, this, &AXmsPlayerController::OnCameraZoom);
 	}
 	else
 	{
 		UE_LOG(LogXms, Error, TEXT("'%s' Failed to find an Enhanced Input Component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+}
+
+void AXmsPlayerController::OnCameraZoom(const FInputActionInstance& InputActionInstance)
+{
+	const float RawInputValue = InputActionInstance.GetValue().Get<float>();
+	const float NormalizedInputValue = FMath::Clamp(RawInputValue, -1.f, 1.f);
+
+	AXmsCharacter* XmsCharacter = GetPawn<AXmsCharacter>();
+	check(XmsCharacter);
+
+	USpringArmComponent* SpringArm = XmsCharacter->GetCameraBoom();
+	check(SpringArm);
+
+	constexpr double ZoomStep = 500.;
+	constexpr double MinLength = 500.;
+	constexpr double MaxLength = 10000.;
+
+	const double NewValue = SpringArm->TargetArmLength + (NormalizedInputValue * ZoomStep);
+	SpringArm->TargetArmLength = FMath::Clamp(NewValue, MinLength, MaxLength);
 }
 
 void AXmsPlayerController::OnInputStarted()
@@ -153,6 +178,14 @@ void AXmsPlayerController::ApplyIniSettings()
 		DefaultMappingContext = Cast<UInputMappingContext>(StaticLoadObject(UInputMappingContext::StaticClass(), nullptr,
 			IMCPath, nullptr, LOAD_None, nullptr));
 		UE_CLOG(DefaultMappingContext == nullptr, LogXms, Error, TEXT("%hs: IMCPath [%s] is not valid"), __FUNCTION__, *IMCPath);
+	}
+
+	if (CameraZoomAction == nullptr
+		&& not CameraZoomActionPath.IsEmpty())
+	{
+		CameraZoomAction = Cast<UInputAction>(StaticLoadObject(UInputAction::StaticClass(), nullptr,
+			CameraZoomActionPath, nullptr, LOAD_None, nullptr));
+		UE_CLOG(CameraZoomAction == nullptr, LogXms, Error, TEXT("%hs: CameraZoomActionPath [%s] is not valid"), __FUNCTION__, *CameraZoomActionPath);
 	}
 
 	if (SetDestinationClickAction == nullptr

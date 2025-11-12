@@ -31,8 +31,8 @@ AXmsCharacter::AXmsCharacter()
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->SetUsingAbsoluteRotation(true); // Don't want arm to rotate when character does
-	CameraBoom->TargetArmLength = 1500.f;
-	CameraBoom->SetRelativeRotation(FRotator(-75.f, 0.f, 0.f));
+	CameraBoom->TargetArmLength = 10000.f;
+	CameraBoom->SetRelativeRotation(FRotator(-89.9f, 0.f, 0.f));
 	CameraBoom->bDoCollisionTest = false; // Don't want to pull camera in when it collides with level
 
 	// Create a camera...

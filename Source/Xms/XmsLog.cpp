@@ -3,3 +3,6 @@
 #include "XmsLog.h"
 
 DEFINE_LOG_CATEGORY(LogXms);
+DEFINE_LOG_CATEGORY(LogXmsBuilder);
+DEFINE_LOG_CATEGORY(LogXmsRegistry);
+DEFINE_LOG_CATEGORY(LogXmsRepresentation);
