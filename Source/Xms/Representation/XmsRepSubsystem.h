@@ -98,10 +98,22 @@ public:
 
 protected:
 	/**
+	 * Maximum FPS to update RenderTarget. Additional frames will be skipped.
+	 */
+	UPROPERTY(Config)
+	float MaxUpdateFPS;
+
+	/**
 	 * Number of square cm any given Canvas Pixel should represent (must be >= KINDA_SMALL_NUMBER)
 	 */
 	UPROPERTY(Config, meta=(ForceUnits="cm", ClampMin=0.0001))
 	float CanvasPixelWorldSize;
+
+	/**
+	 * Base color for the RenderTarget (applied on clear)
+	 */
+	UPROPERTY(Config)
+	FColor ClearRTColor;
 
 	/**
 	 * Soft object path to the RenderTarget this subsystem will use for visualization
@@ -115,6 +127,12 @@ protected:
 	 */
 	UPROPERTY(Config)
 	FName WorldPlaneName;
+
+	/**
+	 * Maximum size any tree will be displayed
+	 */
+	UPROPERTY(Config, meta=(ClampMin=1))
+	float MaxTreeSize;
 
 	/**
 	 * Called during Tick to draw visible Entities to the RenderTarget
@@ -151,6 +169,9 @@ private:
 	FTransactionallySafeRWLock EntityDataPageLock;
 	int32 EntityDataCurrentPage;
 	int32 EntityDataTempPage;
+
+	float TimeBetweenUpdates;
+	float TimeSinceLastUpdate;
 
 	/**
 	 * Iterate World's Actors, looking for the one we expect is the WorldPlane

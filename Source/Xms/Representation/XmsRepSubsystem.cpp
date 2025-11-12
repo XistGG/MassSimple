@@ -42,12 +42,18 @@ UXmsRepSubsystem::UXmsRepSubsystem()
 	EntityDataCurrentPage = 0;
 	EntityDataTempPage = 1;
 
+	MaxUpdateFPS = 30.;
 	CanvasPixelWorldSize = 100.;  // 1px == 1m
+	ClearRTColor = FColor::Black;
 	WorldPlaneName = FName("WorldPlane");
+	MaxTreeSize = 10.;  // 10 canvas px max draw size
 
 	WorldOrigin = FVector::ZeroVector;
 	WorldExtent = FVector::OneVector;  // MUST BE NONZERO
 	CanvasSize = FIntVector2(1);
+
+	TimeBetweenUpdates = -1.;
+	TimeSinceLastUpdate = MAX_flt * .2;  // a large number
 }
 
 void UXmsRepSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -70,6 +76,9 @@ void UXmsRepSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 
 	// In this example project, we aren't using GFPs. We can access assets
 	// as soon as the world has loaded.
+
+	MaxUpdateFPS = FMath::Max(1., MaxUpdateFPS);  // DO NOT ALLOW ZERO
+	TimeBetweenUpdates = 1. / MaxUpdateFPS;
 
 	// Find the WorldPlane actor in the world.
 	// We expect a static mesh actor that contains the "ground" of the world.
@@ -129,7 +138,13 @@ void UXmsRepSubsystem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	UpdateEntities();
+	TimeSinceLastUpdate += DeltaTime;
+
+	if (TimeSinceLastUpdate >= TimeBetweenUpdates)
+	{
+		UpdateEntities();
+		TimeSinceLastUpdate = 0.;
+	}
 }
 
 TStatId UXmsRepSubsystem::GetStatId() const
@@ -186,14 +201,12 @@ void UXmsRepSubsystem::UpdateEntities()
 	check(CurrentPage >= 0 && CurrentPage < EntityDataPages.Num());
 	TArray<const FXmsEntityRepresentationData>* CurrentDataPagePtr = &EntityDataPages[CurrentPage];
 
-	UKismetRenderingLibrary::ClearRenderTarget2D(this, RenderTarget, FLinearColor::Transparent);
+	UKismetRenderingLibrary::ClearRenderTarget2D(this, RenderTarget, ClearRTColor);
 
 	UCanvas* Canvas {nullptr};
 	FVector2D Size;
 	FDrawToRenderTargetContext Context;
 	UKismetRenderingLibrary::BeginDrawCanvasToRenderTarget(this, RenderTarget, OUT Canvas, OUT Size, OUT Context);
-
-	constexpr double MaxTreeSize = 10.;
 
 	for (const FXmsEntityRepresentationData& Data : *CurrentDataPagePtr)
 	{

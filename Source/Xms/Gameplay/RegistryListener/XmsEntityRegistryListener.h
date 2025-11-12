@@ -29,19 +29,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category=Xms)
 	TArray<EXmsEntityMetaType> ObservedMetaTypes;
 
-	/**
-	 * 
-	 * @param MetaType 
-	 * @param EntityContexts 
-	 */
-	virtual void NativeOnObservedEntitiesCreated(const EXmsEntityMetaType& MetaType, const TArray<UXmsRegistrySubsystem::FEntityContext>& EntityContexts);
-
-	/**
-	 * 
-	 * @param MetaType 
-	 * @param EntityContexts 
-	 */
-	virtual void NativeOnObservedEntitiesDestroyed(const EXmsEntityMetaType& MetaType, const TArray<UXmsRegistrySubsystem::FEntityContext>& EntityContexts);
+	/** When True, observe entities and execute callbacks. When False, do nothing. */
+	UPROPERTY(EditAnywhere, Category=Xms)
+	bool bObserveEntities;
 
 	/**
 	 * Callback executed by UXmsRegistrySubsystem when new entities are created
@@ -54,6 +44,20 @@ protected:
 	 * @param EntityContexts Array of Entities that were destroyed
 	 */
 	void NativeOnEntitiesDestroyed(const TArray<UXmsRegistrySubsystem::FEntityContext>& EntityContexts);
+
+	/**
+	 * Callback executed by the base XmsEntityRegistryListener when an observed Entity Type is created
+	 * @param MetaType The Entity's meta type
+	 * @param EntityContexts Array of Entity Contexts of this meta type
+	 */
+	virtual void NativeOnObservedEntitiesCreated(const EXmsEntityMetaType& MetaType, const TArray<UXmsRegistrySubsystem::FEntityContext>& EntityContexts);
+
+	/**
+	 * Callback executed by the base XmsEntityRegistryListener when an observed Entity Type is destroyed
+	 * @param MetaType The Entity's meta type
+	 * @param EntityContexts Array of Entity Contexts of this meta type
+	 */
+	virtual void NativeOnObservedEntitiesDestroyed(const EXmsEntityMetaType& MetaType, const TArray<UXmsRegistrySubsystem::FEntityContext>& EntityContexts);
 
 private:
 	FDelegateHandle OnEntitiesCreatedHandle;

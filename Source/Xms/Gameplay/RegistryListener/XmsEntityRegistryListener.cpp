@@ -9,13 +9,15 @@
 AXmsEntityRegistryListener::AXmsEntityRegistryListener(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
+	bObserveEntities = true;
 }
 
 void AXmsEntityRegistryListener::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (UXmsRegistrySubsystem* RegistrySubsystem = UXmsRegistrySubsystem::Get(GetWorld()))
+	if (UXmsRegistrySubsystem* RegistrySubsystem = UXmsRegistrySubsystem::Get(GetWorld());
+		RegistrySubsystem)
 	{
 		auto OnEntitiesCreatedDelegate = UXmsRegistrySubsystem::FOnEntityContextEvent::FDelegate::CreateUObject(this, &ThisClass::NativeOnEntitiesCreated);
 		auto OnEntitiesDestroyedDelegate = UXmsRegistrySubsystem::FOnEntityContextEvent::FDelegate::CreateUObject(this, &ThisClass::NativeOnEntitiesDestroyed);
@@ -42,22 +44,13 @@ void AXmsEntityRegistryListener::EndPlay(const EEndPlayReason::Type EndPlayReaso
 	Super::EndPlay(EndPlayReason);
 }
 
-void AXmsEntityRegistryListener::NativeOnObservedEntitiesCreated(const EXmsEntityMetaType& MetaType, const TArray<UXmsRegistrySubsystem::FEntityContext>& EntityContexts)
-{
-	// Base class Empty
-}
-
-void AXmsEntityRegistryListener::NativeOnObservedEntitiesDestroyed(const EXmsEntityMetaType& MetaType, const TArray<UXmsRegistrySubsystem::FEntityContext>& EntityContexts)
-{
-	// Base class Empty
-}
-
 void AXmsEntityRegistryListener::NativeOnEntitiesCreated(const TArray<UXmsRegistrySubsystem::FEntityContext>& EntityContexts)
 {
 	checkSlow(EntityContexts.Num() > 0);
 	const EXmsEntityMetaType& MetaType = EntityContexts[0].MetaData.MetaType;
 
-	if (ObservedMetaTypes.Contains(MetaType))
+	if (bObserveEntities  // Allow devs to disable in PIE
+		&& ObservedMetaTypes.Contains(MetaType))
 	{
 		NativeOnObservedEntitiesCreated(MetaType, EntityContexts);
 	}
@@ -68,8 +61,19 @@ void AXmsEntityRegistryListener::NativeOnEntitiesDestroyed(const TArray<UXmsRegi
 	checkSlow(EntityContexts.Num() > 0);
 	const EXmsEntityMetaType& MetaType = EntityContexts[0].MetaData.MetaType;
 
-	if (ObservedMetaTypes.Contains(MetaType))
+	if (bObserveEntities  // Allow devs to disable in PIE
+		&& ObservedMetaTypes.Contains(MetaType))
 	{
 		NativeOnObservedEntitiesDestroyed(MetaType, EntityContexts);
 	}
+}
+
+void AXmsEntityRegistryListener::NativeOnObservedEntitiesCreated(const EXmsEntityMetaType& MetaType, const TArray<UXmsRegistrySubsystem::FEntityContext>& EntityContexts)
+{
+	// Base class Empty
+}
+
+void AXmsEntityRegistryListener::NativeOnObservedEntitiesDestroyed(const EXmsEntityMetaType& MetaType, const TArray<UXmsRegistrySubsystem::FEntityContext>& EntityContexts)
+{
+	// Base class Empty
 }

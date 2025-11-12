@@ -21,7 +21,7 @@ public:
 	AXmsEntityRegistryListener_Wisp(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	//~Begin UObject interface
-	virtual void PostInitProperties() override;
+	virtual void BeginPlay() override;
 	//~End UObject interface
 
 	//~Begin AXmsEntityRegistryListener interface

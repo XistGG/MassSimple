@@ -16,9 +16,9 @@ AXmsEntityRegistryListener_Wisp::AXmsEntityRegistryListener_Wisp(const FObjectIn
 	ObservedMetaTypes = {EXmsEntityMetaType::Wisp};
 }
 
-void AXmsEntityRegistryListener_Wisp::PostInitProperties()
+void AXmsEntityRegistryListener_Wisp::BeginPlay()
 {
-	Super::PostInitProperties();
+	Super::BeginPlay();
 
 	if (not NiagaraSystemPath.IsEmpty())
 	{
