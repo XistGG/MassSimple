@@ -20,6 +20,10 @@ This simple example of a UE5 Mass C++ project:
 	- use **Any** default UE5 Mass Fragments or Gameplay Processors
 		- or the default UE5 Mass Representation system
 	- use Blueprints, Data Assets or any other way to move interesting code/config out of c++/ini
+- Future Roadmap:
+    - Demonstrate Writing Mass Entity Data from Gameplay Code
+    - Add more Reading Mass Entity Data from Gameplay Code examples
+    - Demonstrate Creating Entities in Processors
 
 Detailed performance profiling, analysis and optimization is beyond the scope of this example.
 
@@ -35,25 +39,20 @@ In this implementation, the Meta Data is a Const Shared Fragment.
 
 Every Entity that wants to participate in the Registry **must** have a
 `FXmsT_Registry` Tag.
-
-### Entity Meta Type: `EXmsEntityMetaType`
-Source Code: [ [h](Source/Xms/EntityRegistry/XmsEntityMetaData.h) ]
-
-An example Meta Type. Here we have just Rock, Tree and Wisp.
-
-Currently we don't use the Rock.
-
-### Entity Meta Data: `FXmsCSF_MetaData`
-Source Code: [ [h](Source/Xms/EntityRegistry/XmsEntityMetaData.h) ]
-
-### Registry Tag: `FXmsT_Registry`
-Source Code: [ [h](Source/Xms/EntityRegistry/XmsEntityRegistry.h) ]
+All Entities without this tag are ignored by the Registry system.
 
 ### Registry Subsystem: `UXmsRegistrySubsystem`
 Source Code:
 [ [h](Source/Xms/EntityRegistry/XmsEntityRegistry.h)
 | [cpp](Source/Xms/EntityRegistry/XmsEntityRegistry.cpp)
 ]
+
+Using `TMassExternalSubsystemTraits`:
+
+| Trait | Value | Notes |
+|---|---|---|
+| `GameThreadOnly` | `false` | YES read thread-safe |
+| `ThreadSafeWrite` | `true` | YES write thread-safe |
 
 ### Entity Registry Processors
 Source Code:
@@ -74,33 +73,95 @@ Your mileage may vary.
 	- Observes Entities created with `FXmsT_Registry` Tag
 	- Executes `UXmsRegistrySubsystem::MassOnEntitiesDestroyed` **from ANY thread**
 
+### Entity Meta Type: `EXmsEntityMetaType`
+Source Code: [ [h](Source/Xms/EntityRegistry/XmsEntityMetaData.h) ]
+
+An example Meta Type. Here we have just Rock, Tree and Wisp.
+
+Currently we don't use the Rock.
+
+`Tree` Entities are automatically built periodically by the
+[AXmsEntityTreeBuilder](#AXmsEntityTreeBuilder).
+
+`Wisp` Entities are automatically built periodically by a
+[UXmsEntityBuilderComponent](#UXmsEntityBuilderComponent)
+attached to the Player Pawn.
+
+### Entity Meta Data: `FXmsCSF_MetaData`
+Source Code: [ [h](Source/Xms/EntityRegistry/XmsEntityMetaData.h) ]
+
+For now the Meta Data consists of only a single piece of information: the Meta Type.
+
+You can easily imagine adding other meta-properties as needed for your game.
+
+### Registry Tag: `FXmsT_Registry`
+Source Code: [ [h](Source/Xms/EntityRegistry/XmsEntityRegistry.h) ]
+
+- Presence of this tag identifies an Entity that the Registry will monitor
+    - The tag **must be present** in Entity Build configuration to trigger the Entity `OnCreated` event
+
 ### Entity Registry Listeners
 
-#### Abstract Base Class: `UXmsEntityRegistryListener`
+#### Abstract Base Class: `AXmsEntityRegistryListener`
 Source Code:
 [ [h](Source/Xms/Gameplay/RegistryListener/XmsEntityRegistryListener.h)
 | [cpp](Source/Xms/Gameplay/RegistryListener/XmsEntityRegistryListener.cpp)
 ]
 
-#### Example Implementation: `UXmsEntityRegistryListener_Wisp`
+- Implements base listener functionality
+    - Any Registry-wide Entity Create or Destroy Events matching `ObservedMetaTypes` will trigger "On Observed" events
+- Provides pure virtual methods derived classes must implement:
+    - `NativeOnObservedEntitiesCreated`
+    - `NativeOnObservedEntitiesDestroyed`
+
+<a id='AXmsEntityRegistryListener_Wisp'></a>
+#### Example Implementation: `AXmsEntityRegistryListener_Wisp`
 Source Code:
 [ [h](Source/Xms/Gameplay/RegistryListener/XmsEntityRegistryListener_Wisp.h)
 | [cpp](Source/Xms/Gameplay/RegistryListener/XmsEntityRegistryListener_Wisp.cpp)
 ]
 
+An Actor of this class is present in the `L_Default` World Level.
+*(See the UEditor Scene Outliner).*
+
+When its `bObserveEntities == true`, the Actor responds to "Wisp Entity Created" events by spawning
+a Niagara system at the `Wisp` World Location.
+
+- Implements `NativeOnObservedEntitiesCreated` to spawn a Niagara System at the `Wisp` World Location
+- Empty implementation of `NativeOnObservedEntitiesDestroyed` with comments explaining what you could do there
+
 ## Entity Builders
 
+<a id='UXmsEntityBuilderComponent'></a>
 ### Actor Component: UXmsEntityBuilderComponent
 Source Code:
 [ [h](Source/Xms/EntityBuilders/XmsEntityBuilderComponent.h)
 | [cpp](Source/Xms/EntityBuilders/XmsEntityBuilderComponent.cpp)
 ]
 
+The `BP_Character` in game has one of these components on it.
+
+When Active, this component causes `Wisp` Entities to be built
+at a periodic interval, at the current owner Actor's location
+(the Player Pawn location).
+
+See `UXmsEntityBuilderComponent::SetupEntityBuilder`
+for the exact configuration used to build a `Wisp`.
+
+<a id='AXmsEntityTreeBuilder'></a>
 ### Actor: AXmsEntityTreeBuilder
 Source Code:
 [ [h](Source/Xms/EntityBuilders/XmsEntityTreeBuilder.h)
 | [cpp](Source/Xms/EntityBuilders/XmsEntityTreeBuilder.cpp)
 ]
+
+An Actor of this class is present in the `L_Default` World Level.
+*(See the UEditor Scene Outliner).*
+
+When Active, this Actor causes `Tree` Entities to be built
+at a periodic interval, at a random World Location within the
+Actor bounds.
+(The base Actor is `AVolume` to provide the UEditor bounds controls).
 
 ## Entity Attributes
 
