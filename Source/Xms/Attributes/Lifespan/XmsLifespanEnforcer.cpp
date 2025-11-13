@@ -1,6 +1,6 @@
 // Copyright (c) 2025 Xist.GG
 
-#include "XmsLifespanProcessors.h"
+#include "XmsLifespanEnforcer.h"
 
 #include "MassExecutionContext.h"
 #include "XmsLifespan.h"
@@ -34,8 +34,12 @@ void UXmsLifespanEnforcer::Execute(FMassEntityManager& EntityManager, FMassExecu
 	{
 		TArray<FMassEntityHandle> EntitiesToDestroy;
 
+		// Every Entity has its own Lifespan
 		const auto Lifespans = Context.GetMutableFragmentView<FXmsF_Lifespan>();
 
+		// Iterate over each Entity in this chunk
+		//   - Increment Age
+		//   - Remember Entities that need to die of old age
 		for (FMassExecutionContext::FEntityIterator EntityIt = Context.CreateEntityIterator(); EntityIt; ++EntityIt)
 		{
 			FXmsF_Lifespan& Lifespan = Lifespans[*EntityIt];

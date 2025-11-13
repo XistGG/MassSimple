@@ -223,13 +223,12 @@ Lifespan system.
 Every Entity without this Fragment is effectively Immortal
 as far as the Lifespan system is concerned.
 
-#### Lifespan Processors
-Source Code:
-[ [h](Source/Xms/Attributes/Lifespan/XmsLifespanProcessors.h)
-| [cpp](Source/Xms/Attributes/Lifespan/XmsLifespanProcessors.cpp)
-]
+#### Lifespan Enforcer
 
 - `UXmsLifespanEnforcer`
+  [ [h](Source/Xms/Attributes/Lifespan/XmsLifespanEnforcer.h)
+  | [cpp](Source/Xms/Attributes/Lifespan/XmsLifespanEnforcer.cpp)
+  ]
 	- Adds simulation `DeltaTime` to Entity age each tick
 		- Kills Entities that are past their `MaxAge`
 	- Executes in `FrameEnd` so old Entities live until the end of the tick

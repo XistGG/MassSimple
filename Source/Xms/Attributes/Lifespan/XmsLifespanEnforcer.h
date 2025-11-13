@@ -4,7 +4,7 @@
 
 #include "MassProcessor.h"
 
-#include "XmsLifespanProcessors.generated.h"
+#include "XmsLifespanEnforcer.generated.h"
 
 /**
  * UXmsLifespanEnforcer
