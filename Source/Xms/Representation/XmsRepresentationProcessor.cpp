@@ -24,9 +24,9 @@ UXmsRepresentationProcessor::UXmsRepresentationProcessor()
 void UXmsRepresentationProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager)
 {
 	Query.AddTagRequirement<FXmsT_Represent>(EMassFragmentPresence::All);
+	Query.AddConstSharedRequirement<FXmsCSF_MetaData>(EMassFragmentPresence::All);
 	Query.AddRequirement<FXmsF_Transform>(EMassFragmentAccess::ReadOnly);
 	Query.AddRequirement<FXmsF_Lifespan>(EMassFragmentAccess::ReadOnly, EMassFragmentPresence::Optional);
-	Query.AddConstSharedRequirement<FXmsCSF_MetaData>(EMassFragmentPresence::All);
 
 	ProcessorRequirements.AddSubsystemRequirement<UXmsRepSubsystem>(EMassFragmentAccess::ReadWrite);
 }
