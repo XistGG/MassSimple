@@ -44,7 +44,9 @@ I expect that you will optimize your code to your own specifications.
 - [Entity Attributes](#entity-attributes)
     - [Lifespan](#lifespan-attribute)
 - [Entity Representation](#entity-representation)
-- [Naming Conventions](#naming-conventions)
+- [Game Setup](#game-setup)
+- [Miscellaneous Thoughts](#miscellaneous-thoughts)
+    - [Naming Conventions](#naming-conventions)
 
 ## Entity Registry
 
@@ -338,21 +340,6 @@ Source Code:
 	- Added camera zoom input using `AXmsCharacter` interface
 - Allow for BP-based class assignments via `DefaultXms.ini`
 
-## Naming Conventions
-
-| Pattern       | Data Type                        |
-|---------------|----------------------------------|
-| `FXmsCSF_Foo` | Mass Const Shared Fragment `Foo` |
-| `FXmsF_Foo`   | Mass Fragment `Foo`              |
-| `FXmsT_Foo`   | Mass Tag `Foo`                   |
-
-Generally I'm not a fan of using `_` in names in UE mainly because of Blueprints.
-In this case, I make an exception, since I find it challenging to know at a glance
-what type of Const Shared Fragment `FXmsFooConstSharedFragment` really is.
-Conversely, `FXmsCSF_Foo` is quite obviously a `Foo` Const Shared Fragment.
-
-Thus, I prefix these special Mass type names with `CSF_`, `F_`, `T_` or others as needed.
-
 # Miscellaneous Thoughts
 
 I'm not going for lots of features here, I'm going for practical examples in minimalist C++
@@ -367,7 +354,22 @@ Note also that I am not perfect *(I know it is shocking)* and so if I have made 
 or if you know a better way to do something, please do share your expertise,
 I will appreciate your input.
 
-## Note on Render Target usage
+### Naming Conventions
+
+| Pattern       | Data Type                        |
+|---------------|----------------------------------|
+| `FXmsCSF_Foo` | Mass Const Shared Fragment `Foo` |
+| `FXmsF_Foo`   | Mass Fragment `Foo`              |
+| `FXmsT_Foo`   | Mass Tag `Foo`                   |
+
+Generally I'm not a fan of using `_` in names in UE mainly because of Blueprints.
+In this case, I make an exception, since I find it challenging to know at a glance
+what type of Const Shared Fragment `FXmsFooConstSharedFragment` really is.
+Conversely, `FXmsCSF_Foo` is quite obviously a `Foo` Const Shared Fragment.
+
+Thus, I prefix these special Mass type names with `CSF_`, `F_`, `T_` or others as needed.
+
+### Note on Render Target usage
 
 I know I am completely abusing Render Targets.  The Render Target usage here is brute force
 and full of inefficiencies.  The RenderTarget abuse causes some hitches if/when there are
@@ -379,7 +381,7 @@ instead it is simply to show the data pipeline from `Mass -> Game -> Render`, wi
 expectation that you would replace the Representation system with your own custom implementation
 doing whatever is appropriate for your game.
 
-## Notice: `MassGameplay` Dependency
+### Notice: `MassGameplay` Dependency
 
 This repository doesn't use *anything* from `MassGameplay`,
 but for some reason the `UMassSimulationSubsystem` is in that module,
@@ -389,7 +391,7 @@ as no processors will ever execute other than Observers.
 If Mass Processors aren't working in your project even though you are sure they should be,
 make sure you enable the `MassGameplay` plugin.
 
-## Use `DebugGame` Build Configuration
+### Use `DebugGame` Build Configuration
 
 This project is intended to be developed in the `DebugGame` build configuration
 *(with additional debug code enabled)*.
