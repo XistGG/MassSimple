@@ -33,19 +33,22 @@ void UXmsEntityCreated::Execute(FMassEntityManager& EntityManager, FMassExecutio
 
 	TArray<UXmsRegistrySubsystem::FEntityContext> Entities;
 	Query.ForEachEntityChunk(Context,[&Entities](FMassExecutionContext& Context)
+	{
+		// MetaData is shared by all Entities in this chunk
+		const auto& MetaData = Context.GetConstSharedFragment<FXmsCSF_MetaData>();
+
+		// Allocate memory to store data for MassOnEntitiesCreated event
+		Entities.Reserve(Entities.Num() + Context.GetNumEntities());
+
+		// Iterate over each Entity in this chunk, copy relevant info
+		for (FMassExecutionContext::FEntityIterator EntityIt = Context.CreateEntityIterator(); EntityIt; ++EntityIt)
 		{
-			Entities.Reserve(Entities.Num() + Context.GetNumEntities());
-
-			const auto& MetaData = Context.GetConstSharedFragment<FXmsCSF_MetaData>();
-
-			for (FMassExecutionContext::FEntityIterator EntityIt = Context.CreateEntityIterator(); EntityIt; ++EntityIt)
-			{
-				UXmsRegistrySubsystem::FEntityContext EntityContext {
-					.Entity = Context.GetEntity(*EntityIt),
-					.MetaData = MetaData,  // COPY the MetaData
-				};
-				Entities.Emplace(EntityContext);
-			}
+			UXmsRegistrySubsystem::FEntityContext EntityContext {
+				.Entity = Context.GetEntity(*EntityIt),
+				.MetaData = MetaData,  // COPY the MetaData
+			};
+			Entities.Emplace(EntityContext);
+		}
 	});
 
 	if (Entities.Num() > 0)
@@ -85,19 +88,22 @@ void UXmsEntityDestroyed::Execute(FMassEntityManager& EntityManager, FMassExecut
 
 	TArray<UXmsRegistrySubsystem::FEntityContext> Entities;
 	Query.ForEachEntityChunk(Context,[&Entities](FMassExecutionContext& Context)
+	{
+		// MetaData is shared by all Entities in this chunk
+		const auto& MetaData = Context.GetConstSharedFragment<FXmsCSF_MetaData>();
+
+		// Allocate memory to store data for MassOnEntitiesDestroyed event
+		Entities.Reserve(Entities.Num() + Context.GetNumEntities());
+
+		// Iterate over each Entity in this chunk, copy relevant info
+		for (FMassExecutionContext::FEntityIterator EntityIt = Context.CreateEntityIterator(); EntityIt; ++EntityIt)
 		{
-			Entities.Reserve(Entities.Num() + Context.GetNumEntities());
-
-			const auto& MetaData = Context.GetConstSharedFragment<FXmsCSF_MetaData>();
-
-			for (FMassExecutionContext::FEntityIterator EntityIt = Context.CreateEntityIterator(); EntityIt; ++EntityIt)
-			{
-				UXmsRegistrySubsystem::FEntityContext EntityContext {
-					.Entity = Context.GetEntity(*EntityIt),
-					.MetaData = MetaData,  // COPY the MetaData
-				};
-				Entities.Emplace(EntityContext);
-			}
+			UXmsRegistrySubsystem::FEntityContext EntityContext {
+				.Entity = Context.GetEntity(*EntityIt),
+				.MetaData = MetaData,  // COPY the MetaData
+			};
+			Entities.Emplace(EntityContext);
+		}
 	});
 
 	if (Entities.Num() > 0)

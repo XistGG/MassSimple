@@ -40,35 +40,43 @@ void UXmsRepresentationProcessor::Execute(FMassEntityManager& EntityManager, FMa
 
 	Query.ParallelForEachEntityChunk(Context, [&TotalNumEntities, &DataQueue](FMassExecutionContext& Context)
 	{
-		TotalNumEntities += Context.GetNumEntities();
-
+		// MetaData is shared by all Entities in this chunk
 		const auto& MetaData = Context.GetConstSharedFragment<FXmsCSF_MetaData>();
-		const auto Lifespans = Context.GetFragmentView<FXmsF_Lifespan>();
+
+		// Every Entity has its own Transform
 		const auto Transforms = Context.GetFragmentView<FXmsF_Transform>();
 
-		const bool bHaveLifespan = Lifespans.Num() > 0;
+		// Some Entities have Lifespan, but it's optional.
+		const auto Lifespans = Context.GetFragmentView<FXmsF_Lifespan>();
+		const bool bHaveLifespan = Lifespans.Num() > 0;  // Do the Entities in this chunk have Lifespans?
 
+		// Allocate memory to store data for the Game/Render threads
 		TArray<const FXmsEntityRepresentationData> Entities;
 		Entities.Reserve(Context.GetNumEntities());
+		TotalNumEntities += Context.GetNumEntities();
 
+		// Iterate over each Entity in this chunk, copy relevant info
 		for (FMassExecutionContext::FEntityIterator EntityIt = Context.CreateEntityIterator(); EntityIt; ++EntityIt)
 		{
 			const FXmsF_Transform& Transform = Transforms[*EntityIt];
 
-			float RelativeAge {-1.};
+			// Any Entity without a Lifespan will report AlphaAge = -1
+			// If this chunk has a lifespan, AlphaAge will be computed based on the Lifespan data.
+			float AlphaAge {-1.};
 			if (bHaveLifespan)
 			{
 				const FXmsF_Lifespan& Lifespan = Lifespans[*EntityIt];
-				RelativeAge = Lifespan.MaxAge >= KINDA_SMALL_NUMBER && not Lifespan.IsImmortal()
+				AlphaAge = Lifespan.MaxAge >= KINDA_SMALL_NUMBER && not Lifespan.IsImmortal()
 					? Lifespan.CurrentAge / Lifespan.MaxAge
 					: 1.;  // either Immortal or at max expected age
 			}
 
+			// This is the data that will be made available to the Game/Render systems
 			const FXmsEntityRepresentationData Data {
 				.Entity = Context.GetEntity(*EntityIt),
 				.MetaType = MetaData.MetaType,
 				.Location = Transform.Location,
-				.AlphaAge = RelativeAge,
+				.AlphaAge = AlphaAge,
 			};
 			Entities.Emplace(Data);
 		}
