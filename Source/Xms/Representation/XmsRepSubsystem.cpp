@@ -170,11 +170,15 @@ TStatId UXmsRepSubsystem::GetStatId() const
 
 void UXmsRepSubsystem::MassPrepare(const int32 ExpectedNum)
 {
+	QUICK_SCOPE_CYCLE_COUNTER(UXmsRepSubsystem_Prepare);
+
 	EntityDataPages[EntityDataTempPage].Reset(ExpectedNum);
 }
 
 void UXmsRepSubsystem::MassAppend(const TArray<const FXmsEntityRepresentationData>& Entities)
 {
+	QUICK_SCOPE_CYCLE_COUNTER(UXmsRepSubsystem_Append);
+
 	EntityDataPages[EntityDataTempPage].Append(Entities);
 }
 
@@ -212,7 +216,7 @@ void UXmsRepSubsystem::NativeOnStartPrePhysics(const float DeltaSeconds)
 
 void UXmsRepSubsystem::RedrawRenderTarget()
 {
-	QUICK_SCOPE_CYCLE_COUNTER(UXmsRepSubsystem_UpdateEntities);
+	QUICK_SCOPE_CYCLE_COUNTER(UXmsRepSubsystem_RedrawRenderTarget);
 
 #if WITH_XMS_REPRESENTATION_DEBUG
 	UE_VLOG_UELOG(this, LogXmsRepresentation, Verbose, TEXT("%llu: %hs: Redrawing Render Target"),
