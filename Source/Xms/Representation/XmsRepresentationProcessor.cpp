@@ -6,7 +6,7 @@
 #include "XmsRepSubsystem.h"
 #include "Attributes/Lifespan/XmsLifespan.h"
 #include "EntityRegistry/XmsEntityMetaData.h"
-#include "Misc/XmsFragments.h"
+#include "Common/XmsFragments.h"
 
 //----------------------------------------------------------------------//
 //  UXimVizEntityAdded

@@ -8,7 +8,7 @@
 #include "XmsLog.h"
 #include "EntityRegistry/XmsEntityRegistry.h"
 #include "GameFramework/Actor.h"
-#include "Misc/XmsFragments.h"
+#include "Common/XmsFragments.h"
 #include "Representation/XmsRepSubsystem.h"
 
 // Set Class Defaults

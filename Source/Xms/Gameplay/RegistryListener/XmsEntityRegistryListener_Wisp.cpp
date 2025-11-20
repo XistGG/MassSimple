@@ -7,7 +7,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
 #include "XmsLog.h"
-#include "Misc/XmsFragments.h"
+#include "Common/XmsFragments.h"
 
 // Set Class Defaults
 AXmsEntityRegistryListener_Wisp::AXmsEntityRegistryListener_Wisp(const FObjectInitializer& ObjectInitializer)
