@@ -3,29 +3,42 @@
 | [<img src="MassSimple.png">](https://github.com/XistGG/MassSimple) | `MassSimple` is a simple example of how to do basic things in UE5 Mass C++.<br/><br/>Target UE Version: **5.7** |
 |---|---|
 
+This is a flat 2D Top-Down Third Person Game.
+
+The player can move the Pawn around the small plane by clicking the mouse on the ground.
+
+Ephemeral Wisps follow the Player Pawn around.
+
+Trees are born, grow larger over time, and die of old age.
+
 This simple example of a UE5 Mass C++ project:
 
-- Does:
-	- Demonstrate some methods to:
-		- Build and Destroy Mass Entities
-        - Read and Write Mass Entity data
-		- Safely Receive data ingress from multithreaded Mass processors
-	- Conceptualize a Game "Entity Registry"
-		- Entities with the Registry Tag receive "On Created" and "On Destroyed" Gameplay Events
-		- Entities can optionally be assigned metadata, like Meta Type *(rock, tree, wisp, ...etc...)*
-	- Provide a functional, *non-performant* alternative Representation system
-		- Entities tagged for Representation are drawn as tiles on a Render Target
-			- they otherwise exist purely as Mass Entity data with no other World representation
-	- Utilize some brute-force methodologies in the interest of code simplicity
-- Does **NOT**:
-	- use **Any** default UE5 Mass Fragments or Gameplay Processors
-		- or the default UE5 Mass Representation system
-	- use Blueprints, Data Assets or any other way to move interesting code/config out of c++/ini
-- Future Roadmap:
-    - Demonstrate Writing Mass Entity Data from Gameplay Code
-    - Add more Reading Mass Entity Data from Gameplay Code examples
-    - Demonstrate Adding/Removing Entity Representation Tags at Runtime
-    - Demonstrate Building Entities in Processors
+- Conceptualizes a Game "Entity Registry"
+	- Entities Tagged as Registry-relevant receive "On Created" and "On Destroyed" Gameplay Events
+	- Entities can optionally be assigned metadata, like Meta Type *(rock, tree, wisp, ...etc...)*
+- Demonstrates some methods to:
+	- Build and Destroy Mass Entities
+    - Read and Write Mass Entity data
+	- Safely Receive data ingress from multithreaded Mass processors
+- Provides a functional, *non-performant* alternative Representation system
+	- Entities tagged for Representation are drawn as tiles on a Render Target
+		- they otherwise exist purely as Mass Entity data with no other World representation
+- Utilizes some brute-force methodologies in the interest of code simplicity
+
+Does **NOT**:
+
+- use **Any** default UE5 Mass Fragments
+	- or Gameplay Processors
+	- or the default UE5 Mass Representation system
+- use Blueprints, Data Assets or any other way to move relevant learning code/config out of c++/ini
+	- If you read the C++ you see everything that's happening here
+
+Future Roadmap:
+
+- Demonstrate Writing Mass Entity Data from Gameplay Code
+- Add more Reading Mass Entity Data from Gameplay Code examples
+- Demonstrate Adding/Removing Entity Representation Tags at Runtime
+- Demonstrate Building Entities in Processors
 
 Detailed performance profiling, analysis and optimization is beyond the scope of this example.
 
@@ -43,8 +56,10 @@ I expect that you will optimize your code to your own specifications.
 	- [UXmsEntityBuilderComponent](#actor-component-uxmsentitybuildercomponent)
 	- [AXmsEntityBuilder](#actor-axmsentitytreebuilder)
 - [Entity Attributes](#entity-attributes)
-    - [Lifespan](#lifespan-attribute)
+    - [Lifespan Attribute](#lifespan-attribute)
 - [Entity Representation](#entity-representation)
+	- [Representation Subsystem](#representation-subsystemuxmsrepsubsystem)
+	- [Representation Processors](#representation-processors)
 - [Game Setup](#game-setup)
 - [Miscellaneous Thoughts](#miscellaneous-thoughts)
     - [Naming Conventions](#naming-conventions)
@@ -149,6 +164,8 @@ Entity Registry events and react to them in some way.
 
 We provide the base class `AXmsEntityRegistryListener`
 and a concrete example `AXmsEntityRegistryListener_Wisp`.
+
+You can use this same methodology in `UObject` or other code as needed.
 
 #### Abstract Base Class: `AXmsEntityRegistryListener`
 Source Code:
@@ -364,6 +381,8 @@ Source Code:
 
 - Mostly-default UE5 top-down Character with a camera boom on a spring arm
 	- Gives easy access to the camera and its boom
+- Add [`UXmsEntityRegistryListener_Wisp`](#example-implementation-axmsentityregistrylistener_wisp) component
+  to build Wisps at a regular interval
 
 ### Player Controller: `XmsPlayerController`
 Source Code:
