@@ -51,13 +51,23 @@ I expect that you will optimize your code to your own specifications.
 
 ## Entity Registry
 
-The Entity Registry is how the Game code keeps track of interesting Entities that it needs to be aware of
+The Xms Entity Registry is a project-specific look at how your
+Game code might keep track of interesting Entities that it needs to be aware of
 for whatever reason.
+
+This allows you to create and destroy Entities from any code, Gameplay or processor,
+on any thread. It will automatically detect these events and provide access to them
+for the Game thread.
 
 There may be many more thousands of Entities existing internally in Mass that the Game code doesn't care about,
 and none of those should be configured to be tracked by the Registry.
 
 For each Entity that we care to Register, we will remember its `EntityHandle` and some Meta Data.
+
+- The Subsystem is effectively the persistent memory container for the Registry
+  - Provides thread-safe reads via `GetEntitiesByMetaType`
+- We register `CreateEntity` and `DestroyEntity` Observer Processors
+  - only for Entities tagged with `FXmsT_Registry`
 
 ### Registry Subsystem: `UXmsRegistrySubsystem`
 Source Code:
@@ -117,6 +127,8 @@ Currently we don't use the `Rock`.
 [UXmsEntityBuilderComponent](#actor-component-uxmsentitybuildercomponent)
 attached to the Player Pawn.
 
+Replace these ideas with whatever is relevant for your game.
+
 ### Entity Meta Data: `FXmsCSF_MetaData`
 Source Code: [ [h](Source/Xms/EntityRegistry/XmsEntityMetaData.h) ]
 
@@ -131,6 +143,12 @@ Source Code: [ [h](Source/Xms/EntityRegistry/XmsEntityRegistry.h) ]
     - The tag **must be present** in Entity Build configuration to trigger the Entity `OnCreated` event
 
 ### Entity Registry Listeners
+
+The idea here is you may have some Gameplay Actors or Widgets that need to listen for
+Entity Registry events and react to them in some way.
+
+We provide the base class `AXmsEntityRegistryListener`
+and a concrete example `AXmsEntityRegistryListener_Wisp`.
 
 #### Abstract Base Class: `AXmsEntityRegistryListener`
 Source Code:
@@ -158,16 +176,32 @@ a Niagara system at the `Wisp` World Location.
 
 - Implements `NativeOnObservedEntitiesCreated` to spawn a Niagara System at the `Wisp` World Location
 - Empty implementation of `NativeOnObservedEntitiesDestroyed` with comments explaining what you could do there
+- Demonstrates using `FMassEntityView` to read Mass Entity data from Gameplay code
+  - see `AXmsEntityRegistryListener_Wisp::NativeOnObservedEntitiesCreated`
 
 ## Entity Builders
 
-### Actor Component: UXmsEntityBuilderComponent
+We currently show two similar methods to procedurally generate Entities in Gameplay code.
+By far, the simplest way to do so is using `UE::Mass::FEntityBuilder`.
+
+In the [Actor Component](#actor-component-uxmsentitybuildercomponent) example,
+the component ticks and automatically builds new entities on an interval.
+Entities are always created at the current Player Pawn World Location.
+This Component must be attached to the Player Pawn for this to work.
+
+In the [Actor](#actor-axmsentitytreebuilder) example,
+which also ticks and automatically builds on an interval,
+Entities are randomly located inside the area of the Actor bounds in the Level.
+This Actor must be placed in the Level for this to work.
+
+### Actor Component: `UXmsEntityBuilderComponent`
 Source Code:
 [ [h](Source/Xms/EntityBuilders/XmsEntityBuilderComponent.h)
 | [cpp](Source/Xms/EntityBuilders/XmsEntityBuilderComponent.cpp)
 ]
 
-The `BP_Character` Player Pawn in game has one of these components on it.
+The [`AXmsCharacter`](#player-character-xmscharacter)
+Player Pawn has one of these components on it.
 
 When Active, this component causes `Wisp` Entities to be built
 at a periodic interval, at the current owner Actor's location
@@ -176,7 +210,7 @@ at a periodic interval, at the current owner Actor's location
 See `UXmsEntityBuilderComponent::SetupEntityBuilder`
 for the exact configuration used to build a `Wisp`.
 
-### Actor: AXmsEntityTreeBuilder
+### Actor: `AXmsEntityTreeBuilder`
 Source Code:
 [ [h](Source/Xms/EntityBuilders/XmsEntityTreeBuilder.h)
 | [cpp](Source/Xms/EntityBuilders/XmsEntityTreeBuilder.cpp)

@@ -24,6 +24,8 @@ struct FXmsT_Registry
 
 /**
  * UXmsRegistrySubsystem
+ * 
+ * @see https://github.com/XistGG/MassSimple#entity-registry
  */
 UCLASS(Config=Xms)
 class XMS_API UXmsRegistrySubsystem
