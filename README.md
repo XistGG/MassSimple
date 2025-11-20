@@ -59,6 +59,7 @@ I expect that you will optimize your code to your own specifications.
 - [Entity Representation](#entity-representation)
 	- [Representation Subsystem](#representation-subsystemuxmsrepsubsystem)
 	- [Representation Processors](#representation-processors)
+- [Tick Map](#tick-map)
 - [Game Setup](#game-setup)
 - [Miscellaneous Thoughts](#miscellaneous-thoughts)
     - [Naming Conventions](#naming-conventions)
@@ -397,13 +398,39 @@ Source Code:
 	- Added camera zoom input using `AXmsCharacter` interface
 - Allow for BP-based class assignments via `DefaultXms.ini`
 
+# Tick Map
+
+The more complex the project gets, the more helpful it is to have a Tick Map so you know
+what data is being read/written when.
+
+| TTN | Processing Phase | Thread | Data Processed               |
+|-----|------------------|--------|------------------------------|
+| `*` | *ANY PHASE*      | `*`    | Obs: `UXmsEntityCreated`     |
+| `*` | *ANY PHASE*      | `*`    | Obs: `UXmsEntityDestroyed`   |
+| 1   | `PrePhysics`     | `*`    | *Future Gameplay Logic Here* |
+| 8   | `PostPhysics`    | `***`  | Proc: Representation         |
+| 10  | `FrameEnd`       | `***`  | Proc: Lifespan Enforcer      |
+
+Here `TTN` = Tick Task Number, e.g. the order this thing happens during any given tick,
+where `*` means it could be anything.
+
+Thread `*` means that task can run on any thread.
+Thread `***` means that task is running in parallel on multiple threads simultaneously.
+
+The Observers happen on any thread, during any phase.
+
+Representation runs in `PostPhysics`, ideally after anything that is finalizing Entity positions.
+
+Lifespan Enforcer runs in `FrameEnd` so the Entities live until the very last possible moment
+during their last tick.
+
 # Miscellaneous Thoughts
 
 I'm not going for lots of features here, I'm going for practical examples in minimalist C++
 to hopefully make it as easy as possible to observe coding patterns and methodologies
-when working in multi-threaded Mass C++.
+when working in multithreaded Mass C++.
 
-Note that some of Epic's default processors and subsystems are also multi-threaded, and
+Note that some of Epic's default processors and subsystems are also multithreaded, and
 some of them are not. The patterns you see them using will differ accordingly.
 I have tried to generalize their approaches for this example.
 

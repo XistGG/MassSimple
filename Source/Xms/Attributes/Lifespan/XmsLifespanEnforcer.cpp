@@ -17,8 +17,6 @@ UXmsLifespanEnforcer::UXmsLifespanEnforcer()
 
 	ExecutionFlags = static_cast<int32>(EProcessorExecutionFlags::All);
 	ExecutionOrder.ExecuteInGroup = FName("Lifespan");
-	// Kill entities for next frame before representing them for next frame
-	ExecutionOrder.ExecuteBefore.Add(FName("Representation"));
 }
 
 void UXmsLifespanEnforcer::ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager)
