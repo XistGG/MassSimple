@@ -6,6 +6,7 @@
 #include "CanvasTypes.h"
 #include "EngineUtils.h"
 #include "GlobalRenderResources.h"
+#include "MassSimulationSubsystem.h"
 #include "XmsLog.h"
 #include "Engine/Canvas.h"
 #include "Engine/StaticMeshActor.h"
@@ -42,7 +43,7 @@ UXmsRepSubsystem::UXmsRepSubsystem()
 	EntityDataCurrentPage = 0;
 	EntityDataTempPage = 1;
 
-	MaxUpdateFPS = 30.;
+	MaxUpdateFPS = 4.;  // 4 per 1 sec
 	CanvasPixelWorldSize = 100.;  // 1px == 1m
 	ClearRTColor = FColor::Black;
 	WorldPlaneName = FName("WorldPlane");
@@ -59,10 +60,24 @@ UXmsRepSubsystem::UXmsRepSubsystem()
 void UXmsRepSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
+
+	if (UMassSimulationSubsystem* SimSystem = Collection.InitializeDependency<UMassSimulationSubsystem>())
+	{
+		SimSystem->GetOnProcessingPhaseStarted(EMassProcessingPhase::PrePhysics).AddUObject(this, &ThisClass::NativeOnStartPrePhysics);
+	}
 }
 
 void UXmsRepSubsystem::Deinitialize()
 {
+	if (const UWorld* World = GetWorld())
+	{
+		if (UMassSimulationSubsystem* SimSystem = World->GetSubsystem<UMassSimulationSubsystem>())
+		{
+			// Make sure to unregister EVERY event we registered in Initialize()
+			SimSystem->GetOnProcessingPhaseStarted(EMassProcessingPhase::PrePhysics).RemoveAll(this);
+		}
+	}
+
 	Super::Deinitialize();
 }
 
@@ -168,12 +183,7 @@ void UXmsRepSubsystem::MassCommit()
 
 	{
 		UE::TWriteScopeLock WriteLock (EntityDataPageLock);
-
 		EntityDataCurrentPage = EntityDataTempPage;
-		if (++EntityDataTempPage >= EntityDataPages.Num())
-		{
-			EntityDataTempPage = 0;
-		}
 	}
 
 #if WITH_XMS_REPRESENTATION_DEBUG
@@ -181,6 +191,22 @@ void UXmsRepSubsystem::MassCommit()
 		TEXT("%llu: %hs: Ingested Mass data to page=%i"),
 		GFrameCounter, __FUNCTION__, EntityDataCurrentPage);
 #endif
+}
+
+void UXmsRepSubsystem::NativeOnStartPrePhysics(const float DeltaSeconds)
+{
+#if WITH_XMS_REPRESENTATION_DEBUG
+	UE_VLOG_UELOG(this, LogXmsRepresentation, Verbose, TEXT("%llu: %hs: PrePhysics Processors Starting Up"),
+		GFrameCounter, __FUNCTION__);
+#endif
+
+	// Use the data page that is not currently in use.
+	// This effectively toggles pages every tick.
+
+	if (++EntityDataTempPage >= EntityDataPages.Num())
+	{
+		EntityDataTempPage = 0;
+	}
 }
 
 void UXmsRepSubsystem::UpdateEntities()
@@ -192,6 +218,7 @@ void UXmsRepSubsystem::UpdateEntities()
 		return;
 	}
 
+	// Thread-safe read current page number
 	int32 CurrentPage;
 	{
 		UE::TReadScopeLock ReadLock (EntityDataPageLock);
@@ -199,7 +226,7 @@ void UXmsRepSubsystem::UpdateEntities()
 	}
 
 	check(CurrentPage >= 0 && CurrentPage < EntityDataPages.Num());
-	TArray<const FXmsEntityRepresentationData>* CurrentDataPagePtr = &EntityDataPages[CurrentPage];
+	const TArray<const FXmsEntityRepresentationData>& CurrentDataPage = EntityDataPages[CurrentPage];
 
 	UKismetRenderingLibrary::ClearRenderTarget2D(this, RenderTarget, ClearRTColor);
 
@@ -208,10 +235,10 @@ void UXmsRepSubsystem::UpdateEntities()
 	FDrawToRenderTargetContext Context;
 	UKismetRenderingLibrary::BeginDrawCanvasToRenderTarget(this, RenderTarget, OUT Canvas, OUT Size, OUT Context);
 
-	for (const FXmsEntityRepresentationData& Data : *CurrentDataPagePtr)
+	for (const FXmsEntityRepresentationData& Data : CurrentDataPage)
 	{
 		FLinearColor EntityColor (FLinearColor::White);
-		double SizeScale {1.};
+		double SizeScale {1.};  // 1 tile is the minimum size (a tile is like a pixel)
 
 		switch (Data.MetaType)
 		{
@@ -253,7 +280,7 @@ void UXmsRepSubsystem::UpdateEntities()
 #if WITH_XMS_REPRESENTATION_DEBUG
 	UE_VLOG_UELOG(this, LogXmsRepresentation, Verbose,
 		TEXT("%llu: %hs: Drew %i Entities (page=%i) to RenderTarget"),
-		GFrameCounter, __FUNCTION__, CurrentDataPagePtr->Num(), CurrentPage);
+		GFrameCounter, __FUNCTION__, CurrentDataPage.Num(), CurrentPage);
 #endif
 }
 

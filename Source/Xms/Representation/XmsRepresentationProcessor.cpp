@@ -15,7 +15,7 @@
 UXmsRepresentationProcessor::UXmsRepresentationProcessor()
 	: Query(*this)
 {
-	ProcessingPhase = EMassProcessingPhase::FrameEnd;
+	ProcessingPhase = EMassProcessingPhase::PostPhysics;
 
 	ExecutionFlags = static_cast<int32>(EProcessorExecutionFlags::All);
 	ExecutionOrder.ExecuteInGroup = FName("Representation");
@@ -35,7 +35,7 @@ void UXmsRepresentationProcessor::Execute(FMassEntityManager& EntityManager, FMa
 {
 	QUICK_SCOPE_CYCLE_COUNTER(UXmsRepresentationProcessor);
 
-	int32 TotalNumEntities = 0;
+	std::atomic<int32> TotalNumEntities = 0;
 	TQueue<TArray<const FXmsEntityRepresentationData>> DataQueue;
 
 	Query.ParallelForEachEntityChunk(Context, [&TotalNumEntities, &DataQueue](FMassExecutionContext& Context)
@@ -53,7 +53,6 @@ void UXmsRepresentationProcessor::Execute(FMassEntityManager& EntityManager, FMa
 		// Allocate memory to store data for the Game/Render threads
 		TArray<const FXmsEntityRepresentationData> Entities;
 		Entities.Reserve(Context.GetNumEntities());
-		TotalNumEntities += Context.GetNumEntities();
 
 		// Iterate over each Entity in this chunk, copy relevant info
 		for (FMassExecutionContext::FEntityIterator EntityIt = Context.CreateEntityIterator(); EntityIt; ++EntityIt)
@@ -81,8 +80,9 @@ void UXmsRepresentationProcessor::Execute(FMassEntityManager& EntityManager, FMa
 			Entities.Emplace(Data);
 		}
 
-		// Thread-safe queue
+		// Thread-safe queue and TotalNumEntities count
 		DataQueue.Enqueue(Entities);
+		TotalNumEntities += Context.GetNumEntities();
 	});
 
 	// Update UXmsRepSubsystem data

@@ -135,6 +135,12 @@ protected:
 	float MaxTreeSize;
 
 	/**
+	 * Event executes each tick just before the PrePhysics Mass Processors
+	 * @param DeltaSeconds Current Tick Delta Time
+	 */
+	void NativeOnStartPrePhysics(const float DeltaSeconds);
+
+	/**
 	 * Called during Tick to draw visible Entities to the RenderTarget
 	 */
 	void UpdateEntities();
@@ -165,7 +171,7 @@ private:
 	UPROPERTY(Transient)
 	TObjectPtr<AStaticMeshActor> WorldPlaneActor;
 
-	TStaticArray<TArray<const FXmsEntityRepresentationData>, 3> EntityDataPages;
+	TStaticArray<TArray<const FXmsEntityRepresentationData>, 2> EntityDataPages;
 	FTransactionallySafeRWLock EntityDataPageLock;
 	int32 EntityDataCurrentPage;
 	int32 EntityDataTempPage;

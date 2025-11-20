@@ -259,7 +259,7 @@ This is an intentional design choice for this example project, since it is **ver
 to show how the data gets from point A to point B and you can see it happen every frame
 for every Entity.
 
-Before you ship a game with something like this, you'll want to optimize the shit out of it.
+Before you ship a game with something like this, you'll want to optimize it.
 
 ### Representation Subsystem:`UXmsRepSubsystem`
 Source Code:
@@ -293,7 +293,7 @@ Notice that this subsystem imposes some requirements on its use.
   [ [h](Source/Xms/Representation/XmsRepresentationProcessor.h)
   | [cpp](Source/Xms/Representation/XmsRepresentationProcessor.cpp)
   ]
-	- Executes in `FrameEnd`, copies data to be displayed next frame
+	- Executes in `PostPhysics`, copies data to be displayed next frame
 	- Copy `FXmsEntityRepresentationData` for each Entity with `FXmsT_Represent` Tag
 		- **Parallel execution** uses a thread-safe method for data egress to `UXmsRepSubsystem`
 
@@ -362,7 +362,7 @@ I will appreciate your input.
 | `FXmsF_Foo`   | Mass Fragment `Foo`              |
 | `FXmsT_Foo`   | Mass Tag `Foo`                   |
 
-Generally I'm not a fan of using `_` in names in UE mainly because of Blueprints.
+Generally I'm not a fan of using `_` in names in UE.
 In this case, I make an exception, since I find it challenging to know at a glance
 what type of Const Shared Fragment `FXmsFooConstSharedFragment` really is.
 Conversely, `FXmsCSF_Foo` is quite obviously a `Foo` Const Shared Fragment.
