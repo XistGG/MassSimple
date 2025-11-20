@@ -61,7 +61,8 @@ void UXmsRepSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
-	if (UMassSimulationSubsystem* SimSystem = Collection.InitializeDependency<UMassSimulationSubsystem>())
+	if (auto SimSystem = Collection.InitializeDependency<UMassSimulationSubsystem>();
+		ensure(SimSystem))
 	{
 		SimSystem->GetOnProcessingPhaseStarted(EMassProcessingPhase::PrePhysics).AddUObject(this, &ThisClass::NativeOnStartPrePhysics);
 	}
@@ -157,7 +158,7 @@ void UXmsRepSubsystem::Tick(float DeltaTime)
 
 	if (TimeSinceLastUpdate >= TimeBetweenUpdates)
 	{
-		UpdateEntities();
+		RedrawRenderTarget();
 		TimeSinceLastUpdate = 0.;
 	}
 }
@@ -209,9 +210,14 @@ void UXmsRepSubsystem::NativeOnStartPrePhysics(const float DeltaSeconds)
 	}
 }
 
-void UXmsRepSubsystem::UpdateEntities()
+void UXmsRepSubsystem::RedrawRenderTarget()
 {
 	QUICK_SCOPE_CYCLE_COUNTER(UXmsRepSubsystem_UpdateEntities);
+
+#if WITH_XMS_REPRESENTATION_DEBUG
+	UE_VLOG_UELOG(this, LogXmsRepresentation, Verbose, TEXT("%llu: %hs: Redrawing Render Target"),
+		GFrameCounter, __FUNCTION__);
+#endif
 
 	if (not ensure(RenderTarget))
 	{
@@ -262,7 +268,7 @@ void UXmsRepSubsystem::UpdateEntities()
 		DrawDebugSphere(GetWorld(), Data.Location, 50.0f, 12, FColor::Yellow, true, 5.);
 #endif
 
-		const FVector2D CanvasPoint = WorldToCanvas(Data.Location);
+		const FVector2D CanvasPoint = TranslateWorldLocationToCanvas(Data.Location);
 		const FVector2D CenteredCanvasPoint (
 			FMath::Clamp(CanvasPoint.X - EntityHalfSize.X, 0., CanvasSize.X),
 			FMath::Clamp(CanvasPoint.Y - EntityHalfSize.Y, 0., CanvasSize.Y)
@@ -284,7 +290,7 @@ void UXmsRepSubsystem::UpdateEntities()
 #endif
 }
 
-FVector2D UXmsRepSubsystem::WorldToCanvas(const FVector& Location) const
+FVector2D UXmsRepSubsystem::TranslateWorldLocationToCanvas(const FVector& Location) const
 {
 	const FVector WorldMin = WorldOrigin - WorldExtent;
 	const FVector WorldMax = WorldOrigin + WorldExtent;

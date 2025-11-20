@@ -143,14 +143,14 @@ protected:
 	/**
 	 * Called during Tick to draw visible Entities to the RenderTarget
 	 */
-	void UpdateEntities();
+	void RedrawRenderTarget();
 
 	/**
 	 * Convert a World Location to a Canvas Point
 	 * @param Location The World Location of interest
 	 * @return Canvas Point representing the World Location
 	 */
-	FVector2D WorldToCanvas(const FVector& Location) const;
+	FVector2D TranslateWorldLocationToCanvas(const FVector& Location) const;
 
 private:
 	UPROPERTY(Transient)
