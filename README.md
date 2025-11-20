@@ -6,9 +6,10 @@
 This simple example of a UE5 Mass C++ project:
 
 - Does:
-	- Demonstrate methods to:
-		- Build Mass Entities in any Gameplay code on any thread
-		- Safely receive data ingress from multithreaded Mass processors
+	- Demonstrate some methods to:
+		- Build and Destroy Mass Entities
+        - Read and Write Mass Entity data
+		- Safely Receive data ingress from multithreaded Mass processors
 	- Conceptualize a Game "Entity Registry"
 		- Entities with the Registry Tag receive "On Created" and "On Destroyed" Gameplay Events
 		- Entities can optionally be assigned metadata, like Meta Type *(rock, tree, wisp, ...etc...)*
@@ -24,7 +25,7 @@ This simple example of a UE5 Mass C++ project:
     - Demonstrate Writing Mass Entity Data from Gameplay Code
     - Add more Reading Mass Entity Data from Gameplay Code examples
     - Demonstrate Adding/Removing Entity Representation Tags at Runtime
-    - Demonstrate Creating Entities in Processors
+    - Demonstrate Building Entities in Processors
 
 Detailed performance profiling, analysis and optimization is beyond the scope of this example.
 
