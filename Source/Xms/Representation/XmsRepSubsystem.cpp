@@ -192,7 +192,7 @@ void UXmsRepSubsystem::MassCommit()
 	}
 
 #if WITH_XMS_REPRESENTATION_DEBUG
-	UE_VLOG_UELOG(this, LogXmsRepresentation, Verbose,
+	UE_VLOG_UELOG(this, LogXmsRepresentation, VeryVerbose,
 		TEXT("%llu: %hs: Ingested Mass data to page=%i"),
 		GFrameCounter, __FUNCTION__, EntityDataCurrentPage);
 #endif
@@ -201,7 +201,7 @@ void UXmsRepSubsystem::MassCommit()
 void UXmsRepSubsystem::NativeOnStartPrePhysics(const float DeltaSeconds)
 {
 #if WITH_XMS_REPRESENTATION_DEBUG
-	UE_VLOG_UELOG(this, LogXmsRepresentation, Verbose, TEXT("%llu: %hs: PrePhysics Processors Starting Up"),
+	UE_VLOG_UELOG(this, LogXmsRepresentation, VeryVerbose, TEXT("%llu: %hs: PrePhysics Processors Starting Up"),
 		GFrameCounter, __FUNCTION__);
 #endif
 
@@ -218,11 +218,6 @@ void UXmsRepSubsystem::RedrawRenderTarget()
 {
 	QUICK_SCOPE_CYCLE_COUNTER(UXmsRepSubsystem_RedrawRenderTarget);
 
-#if WITH_XMS_REPRESENTATION_DEBUG
-	UE_VLOG_UELOG(this, LogXmsRepresentation, Verbose, TEXT("%llu: %hs: Redrawing Render Target"),
-		GFrameCounter, __FUNCTION__);
-#endif
-
 	if (not ensure(RenderTarget))
 	{
 		return;
@@ -237,6 +232,12 @@ void UXmsRepSubsystem::RedrawRenderTarget()
 
 	check(CurrentPage >= 0 && CurrentPage < EntityDataPages.Num());
 	const TArray<const FXmsEntityRepresentationData>& CurrentDataPage = EntityDataPages[CurrentPage];
+
+#if WITH_XMS_REPRESENTATION_DEBUG
+	UE_VLOG_UELOG(this, LogXmsRepresentation, Verbose,
+		TEXT("%llu: %hs: Drawing %i Entities (page=%i) to RenderTarget"),
+		GFrameCounter, __FUNCTION__, CurrentDataPage.Num(), CurrentPage);
+#endif
 
 	UKismetRenderingLibrary::ClearRenderTarget2D(this, RenderTarget, ClearRTColor);
 
@@ -286,12 +287,6 @@ void UXmsRepSubsystem::RedrawRenderTarget()
 	}
 
 	UKismetRenderingLibrary::EndDrawCanvasToRenderTarget(this, Context);
-
-#if WITH_XMS_REPRESENTATION_DEBUG
-	UE_VLOG_UELOG(this, LogXmsRepresentation, Verbose,
-		TEXT("%llu: %hs: Drew %i Entities (page=%i) to RenderTarget"),
-		GFrameCounter, __FUNCTION__, CurrentDataPage.Num(), CurrentPage);
-#endif
 }
 
 FVector2D UXmsRepSubsystem::TranslateWorldLocationToCanvas(const FVector& Location) const
