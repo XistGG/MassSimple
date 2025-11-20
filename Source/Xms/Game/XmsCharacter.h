@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "XmsCharacter.generated.h"
 
@@ -31,6 +30,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class USpringArmComponent> CameraBoom;
 
+	/** Component that periodically Auto-builds Wisp Entities at the Pawn location */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UXmsEntityBuilderComponent> WispEntityBuilderComponent;
 };
