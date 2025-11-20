@@ -23,7 +23,7 @@ UXmsEntityBuilderComponent::UXmsEntityBuilderComponent(const FObjectInitializer&
 		.MaxAge = 4.,
 	};
 	bAutoBuildEnabled = true;
-	AutoBuildIntervalSeconds = 0.25;
+	AutoBuildIntervalSeconds = 0.2;
 }
 
 void UXmsEntityBuilderComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

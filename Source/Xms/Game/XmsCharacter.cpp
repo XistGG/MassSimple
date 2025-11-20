@@ -3,13 +3,13 @@
 #include "XmsCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
-#include "Components/DecalComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Materials/Material.h"
 #include "Engine/World.h"
+#include "EntityBuilders/XmsEntityBuilderComponent.h"
 
 AXmsCharacter::AXmsCharacter()
 {
@@ -39,6 +39,10 @@ AXmsCharacter::AXmsCharacter()
 	TopDownCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
 	TopDownCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	TopDownCameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+
+	// Create an auto-build Wisps component
+	WispEntityBuilderComponent = CreateDefaultSubobject<UXmsEntityBuilderComponent>(TEXT("WispEntityBuilder"));
+	WispEntityBuilderComponent->EntityMetaType = EXmsEntityMetaType::Wisp;
 
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;

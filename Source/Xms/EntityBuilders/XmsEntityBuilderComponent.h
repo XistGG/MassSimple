@@ -40,7 +40,7 @@ public:
 	 */
 	bool IsAutoBuildEnabled() const { return bAutoBuildEnabled && AutoBuildIntervalSeconds >= 0.; }
 
-protected:
+public:
 	/**
 	 * MetaType of the Entity to build
 	 */
@@ -69,6 +69,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category=Xms)
 	float AutoBuildIntervalSeconds;
 
+protected:
 	/**
 	 * Build an Entity
 	 * @return Mass Entity Handle for the newly built Entity
