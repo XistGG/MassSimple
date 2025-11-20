@@ -3,22 +3,21 @@
 | [<img src="MassSimple.png">](https://github.com/XistGG/MassSimple) | `MassSimple` is a simple example of how to do basic things in UE5 Mass C++.<br/><br/>Target UE Version: **5.7** |
 |---|---|
 
-This is a flat 2D Top-Down Third Person Game.
+This is a simple Top-Down Third Person Game.
 
-The player can move the Pawn around the small plane by clicking the mouse on the ground.
-
-Ephemeral Wisps follow the Player Pawn around.
-
-Trees are born, grow larger over time, and die of old age.
+- The player can move the Pawn around a small area by clicking the mouse on the terrain
+- Ephemeral Wisps follow the Player Pawn around
+- Trees are born, grow larger over time, and die of old age
 
 This simple example of a UE5 Mass C++ project:
 
 - Conceptualizes a Game "Entity Registry"
-	- Entities Tagged as Registry-relevant receive "On Created" and "On Destroyed" Gameplay Events
+	- This provides Game thread events broadcasting Registry-relevant Mass Create and Destroy operations
+		- Relevant Entities receive "On Created" and "On Destroyed" Gameplay Events
 	- Entities can optionally be assigned metadata, like Meta Type *(rock, tree, wisp, ...etc...)*
 - Demonstrates some methods to:
-	- Build and Destroy Mass Entities
-    - Read and Write Mass Entity data
+	- Create and Destroy Mass Entities
+    - Read and Write Mass Entity Fragment Data
 	- Safely Receive data ingress from multithreaded Mass processors
 - Provides a functional, *non-performant* alternative Representation system
 	- Entities tagged for Representation are drawn as tiles on a Render Target
@@ -125,7 +124,7 @@ Your mileage may vary.
 	- Observes Entities created with `FXmsT_Registry` Tag
 	- Executes `UXmsRegistrySubsystem::MassOnEntitiesCreated` **from ANY thread**
 - `UXmsEntityDestroyed`
-	- Observes Entities created with `FXmsT_Registry` Tag
+	- Observes Entities destroyed with `FXmsT_Registry` Tag
 	- Executes `UXmsRegistrySubsystem::MassOnEntitiesDestroyed` **from ANY thread**
 
 ### Entity Meta Type: `EXmsEntityMetaType`
@@ -196,6 +195,8 @@ a Niagara system at the `Wisp` World Location.
 - Demonstrates using `FMassEntityView` to read Mass Entity data from Gameplay code
   - see `AXmsEntityRegistryListener_Wisp::NativeOnObservedEntitiesCreated`
 
+<img src="./Docs/WispBuilder.png">
+
 ## Entity Builders
 
 We currently show two similar methods to procedurally generate Entities in Gameplay code.
@@ -217,8 +218,8 @@ Source Code:
 | [cpp](Source/Xms/EntityBuilders/XmsEntityBuilderComponent.cpp)
 ]
 
-The [`AXmsCharacter`](#player-character-xmscharacter)
-Player Pawn has one of these components on it.
+The [`AXmsCharacter` Player Pawn](#player-character-xmscharacter)
+has one of these components on it.
 
 When Active, this component causes `Wisp` Entities to be built
 at a periodic interval, at the current owner Actor's location
@@ -243,6 +244,8 @@ Actor bounds.
 
 See `AXmsEntityTreeBuilder::SetupEntityBuilder`
 for the exact configuration used to build a `Tree`.
+
+<img src="./Docs/TreeBuilder.png">
 
 ## Entity Attributes
 
