@@ -1,9 +1,10 @@
 # UE5 Mass Simple C++ Example
 
-| [<img src="MassSimple.png">](https://github.com/XistGG/MassSimple) | `MassSimple` is a simple example of how to do basic things in UE5 Mass C++.<br/><br/>Target UE Version: **5.7** |
+| [<img src="MassSimple.png">](https://github.com/XistGG/MassSimple) | `MassSimple` is a simple example of how to do basic things in UE5 Mass C++.<br/><br/>7 minute overview:<br/>https://youtu.be/K378O2wC6w8<br/><br/>Target UE Version: **5.7** |
 |---|---|
 
 This is a simple Top-Down Third Person Game.
+See the 7 minute [overview video](https://youtu.be/K378O2wC6w8) if it's your first time here.
 
 - The player can move the Pawn around a small area by clicking the mouse on the terrain
 - Ephemeral Wisps follow the Player Pawn around
